@@ -1,0 +1,53 @@
+{
+  "brand_name": "SENTINELOPS AI",
+  "tagline": "GUARDRAILS THAT ACTUALLY ENFORCE",
+  "theme": {
+    "primary": "#06b6d4",
+    "secondary": "#8b5cf6",
+    "accent": "#f43f5e",
+    "background": "#080b11"
+  },
+  "scenes": [
+    {
+      "id": 1,
+      "type": "tension",
+      "headline": "AUTONOMOUS AGENTS HAVE PRODUCTION KEYS.",
+      "subtext": "What happens when an agent hallucinates DROP TABLE or wires unverified funds?",
+      "duration_seconds": 3.5,
+      "vfx": "chromatic_glitch"
+    },
+    {
+      "id": 2,
+      "type": "hero",
+      "headline": "INTRODUCING SENTINELOPS AI",
+      "subtext": "The deterministic in-line gateway that halts dangerous tool calls before execution.",
+      "duration_seconds": 3.5,
+      "vfx": "cyan_glow_mesh"
+    },
+    {
+      "id": 3,
+      "type": "mockup_3d",
+      "headline": "IN-LINE PRE-FLIGHT INTERCEPTION",
+      "subtext": "AST parameter analysis halts rogue commands in under 12 milliseconds.",
+      "duration_seconds": 4.5,
+      "vfx": "device_mockup_3d"
+    },
+    {
+      "id": 4,
+      "type": "metrics",
+      "headline": "100% FAIL-CLOSED SECURITY",
+      "subtext": "Single-use 15-minute TTL tokens bound to human approval queues.",
+      "duration_seconds": 3.5,
+      "vfx": "metric_pulse"
+    },
+    {
+      "id": 5,
+      "type": "cta",
+      "headline": "SENTINELOPS AI",
+      "subtext": "Deploy the Python SDK. Guard your agents today.",
+      "duration_seconds": 4.0,
+      "vfx": "logo_reveal"
+    }
+  ],
+  "voiceover_script": "Autonomous AI agents have access to production databases, APIs, and company secrets. What happens when an agent hallucinates a drop table command or initiates an unauthorized wire? Introducing SentinelOps AI. The deterministic in-line enforcement engine that intercepts tool calls before execution. With sub-twelve millisecond latency, tamper-evident audit ledgers, and one-tap mobile human approvals, you gain total visibility and control. Deploy SentinelOps AI. Guardrails that actually enforce."
+}
