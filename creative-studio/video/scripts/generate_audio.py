@@ -141,3 +141,4 @@ if __name__ == '__main__':
     generate_chime()
     generate_impact()
     print("All audio assets synthesized successfully!")
+

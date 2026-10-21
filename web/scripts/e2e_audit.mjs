@@ -194,6 +194,7 @@ async function runE2EAudit() {
     { url: '/dashboard/settings', name: 'Settings & Security Baselines' },
     { url: '/docs', name: 'Documentation & Architecture Guide' },
     { url: '/login', name: 'Authentication Login' },
+    { url: '/pricing', name: 'Transparent Enterprise Pricing' },
   ];
 
   for (const sub of subpages) {

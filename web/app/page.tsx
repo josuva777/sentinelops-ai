@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import Link from 'next/link';
 import { Navbar } from '../components/Navbar';
 import { ParticleCanvas } from '../components/ParticleCanvas';
+import { PricingSection } from '../components/PricingSection';
 import { useTheme } from '../lib/themeContext';
 import { motion } from 'motion/react';
 import {
@@ -624,6 +625,9 @@ def wire_funds(amount: float, swift_code: str):
             </div>
           </div>
         </section>
+
+        {/* TRANSPARENT ENTERPRISE PRICING */}
+        <PricingSection />
       </main>
 
       {/* FOOTER */}
@@ -631,6 +635,7 @@ def wire_funds(amount: float, swift_code: str):
         <div className="mx-auto max-w-7xl px-4 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div>© 2026 SentinelOps AI. Open-source enterprise agent security & operations.</div>
           <div className="flex items-center gap-6 text-slate-400">
+            <Link href="/pricing" className="hover:text-white transition-colors">Pricing</Link>
             <Link href="/docs" className="hover:text-white transition-colors">Documentation</Link>
             <Link href="/dashboard" className="hover:text-white transition-colors">Console</Link>
             <a href="https://github.com/josuva777/sentinelops-ai" target="_blank" rel="noreferrer" className="hover:text-white transition-colors">GitHub</a>

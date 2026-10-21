@@ -55,11 +55,11 @@ export function NotificationBell() {
             animate={{ opacity: 1, y: 0, scale: 1 }}
             exit={{ opacity: 0, y: 8, scale: 0.95 }}
             transition={{ duration: 0.18, ease: 'easeOut' }}
-            className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl p-3 z-50 border shadow-2xl backdrop-blur-xl"
+            className="absolute right-0 mt-2 w-80 sm:w-96 rounded-2xl p-3 z-50 border shadow-2xl"
             style={{
-              backgroundColor: `${currentTheme.surface}f8`,
+              backgroundColor: currentTheme.surface,
               borderColor: currentTheme.surfaceBorder,
-              boxShadow: `0 25px 50px -12px rgba(0,0,0,0.9), 0 0 30px -5px ${currentTheme.glow}`,
+              boxShadow: `0 30px 60px -12px rgba(0,0,0,0.95), 0 0 35px -5px ${currentTheme.glow}`,
             }}
           >
             <div className="flex items-center justify-between pb-2 mb-2 border-b" style={{ borderColor: currentTheme.surfaceBorder }}>
@@ -158,3 +158,4 @@ export function NotificationBell() {
     </div>
   );
 }
+

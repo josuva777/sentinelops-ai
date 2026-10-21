@@ -50,17 +50,17 @@ export function Navbar() {
           <Link href="/#about" className="hover:text-white transition-colors">
             About Us
           </Link>
-          <Link href="#architecture" className="hover:text-white transition-colors">
+          <Link href="/#architecture" className="hover:text-white transition-colors">
             Architecture
           </Link>
-          <Link href="#simulator" className="hover:text-white transition-colors">
+          <Link href="/#simulator" className="hover:text-white transition-colors">
             Simulator
           </Link>
           <Link href="/docs" className="hover:text-white transition-colors">
             Docs & API
           </Link>
-          <Link href="#pricing" className="hover:text-white transition-colors">
-            Tiers
+          <Link href="/pricing" className="hover:text-white transition-colors font-semibold">
+            Pricing
           </Link>
         </nav>
 
