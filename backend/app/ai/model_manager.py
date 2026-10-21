@@ -82,3 +82,4 @@ if __name__ == "__main__":
 
     result = model_manager.download_model(repo_id=args.repo, filename=args.file)
     print(json.dumps(result, indent=2))
+

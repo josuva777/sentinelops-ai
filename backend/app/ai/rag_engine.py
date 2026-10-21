@@ -147,3 +147,4 @@ class PurePythonRAGEngine:
 
 rag_engine = PurePythonRAGEngine()
 RAGEngine = PurePythonRAGEngine
+

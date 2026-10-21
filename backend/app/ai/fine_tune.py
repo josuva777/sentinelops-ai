@@ -151,3 +151,4 @@ if __name__ == "__main__":
     print("Training result:", res)
     test_eval = trainer.predict("DROP TABLE customers", "drop_database_table", {"table": "customers"})
     print("Test prediction for drop table:", test_eval)
+

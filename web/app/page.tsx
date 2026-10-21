@@ -3,6 +3,7 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { Navbar } from '../components/Navbar';
+import { ParticleCanvas } from '../components/ParticleCanvas';
 import { useTheme } from '../lib/themeContext';
 import { motion } from 'motion/react';
 import {
@@ -109,6 +110,9 @@ export default function HomePage() {
             className="absolute top-1/4 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[700px] h-[500px] rounded-full pointer-events-none opacity-20 blur-[130px] transition-all duration-700"
             style={{ backgroundColor: currentTheme.primary }}
           />
+
+          {/* 60fps Interactive Canvas Particle Network */}
+          <ParticleCanvas />
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 text-center">
             {/* Live badge */}

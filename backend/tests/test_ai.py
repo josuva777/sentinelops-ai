@@ -19,3 +19,4 @@ def test_model_manager_inventory():
     inventory = model_manager.list_local_models()
     assert "models_directory" in inventory
     assert "installed_count" in inventory
+
