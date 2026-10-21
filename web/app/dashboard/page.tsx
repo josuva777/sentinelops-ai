@@ -21,21 +21,57 @@ import {
 } from '../../lib/dataStore';
 import { useTheme } from '../../lib/themeContext';
 import { useOperations } from '../../lib/operationsContext';
+import { useAuth } from '../../lib/authContext';
 
 export default function DashboardOverviewPage() {
   const { currentTheme } = useTheme();
   const { approvals, alerts } = useOperations();
-  const pendingApprovals = approvals.filter((a) => a.status === 'PENDING');
-  const criticalAlerts = alerts.filter((a) => a.severity === 'critical' && a.status !== 'RESOLVED');
+  const { currentUser } = useAuth();
+  const isMaster = Boolean(currentUser?.isMasterAdmin);
+
+  const [tenantAgents, setTenantAgents] = React.useState<any[]>([]);
+
+  React.useEffect(() => {
+    if (!isMaster && currentUser?.id) {
+      try {
+        const stored = localStorage.getItem(`sentinelops_agents_${currentUser.id}`);
+        if (stored) {
+          setTenantAgents(JSON.parse(stored));
+        } else {
+          setTenantAgents([]);
+        }
+      } catch {
+        setTenantAgents([]);
+      }
+    }
+  }, [isMaster, currentUser?.id]);
+
+  const displayedAgents = isMaster ? INITIAL_AGENTS : tenantAgents;
+  const pendingApprovals = isMaster ? approvals.filter((a) => a.status === 'PENDING') : [];
+  const activeAlerts = isMaster ? alerts.filter((a) => a.status !== 'RESOLVED') : [];
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
       {/* Page Title & Status */}
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b" style={{ borderColor: currentTheme.surfaceBorder }}>
         <div>
-          <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Security & Operations Overview</h1>
-          <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Real-time telemetry and deterministic tool enforcement across all connected AI agents.
+          <div className="flex items-center gap-2 mb-1">
+            <h1 className="text-2xl sm:text-3xl font-extrabold text-white tracking-tight">Security & Operations Overview</h1>
+            <span
+              className="rounded px-2 py-0.5 text-[10px] font-bold border font-mono uppercase"
+              style={{
+                backgroundColor: currentTheme.badgeBg,
+                color: currentTheme.badgeText,
+                borderColor: currentTheme.surfaceBorder,
+              }}
+            >
+              {isMaster ? 'Global Fleet Command' : `${currentUser?.company || 'Tenant Workspace'}`}
+            </span>
+          </div>
+          <p className="text-xs sm:text-sm text-slate-400">
+            {isMaster
+              ? 'Real-time telemetry and deterministic tool enforcement across all connected AI agents.'
+              : `Isolated tenant environment for ${currentUser?.name || 'Operator'} (${currentUser?.company || 'Workspace'}). Zero data cross-talk.`}
           </p>
         </div>
 
@@ -49,6 +85,70 @@ export default function DashboardOverviewPage() {
           </Link>
         </div>
       </div>
+
+      {/* NEW TENANT ONBOARDING QUICKSTART CARD (Displayed for all non-master accounts) */}
+      {!isMaster && (
+        <div
+          className="p-6 rounded-2xl border shadow-xl relative overflow-hidden"
+          style={{
+            backgroundColor: currentTheme.surface,
+            borderColor: currentTheme.surfaceBorder,
+          }}
+        >
+          <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
+            <div className="space-y-1.5">
+              <div className="flex items-center gap-2">
+                <span
+                  className="px-2 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider font-mono border"
+                  style={{
+                    backgroundColor: currentTheme.badgeBg,
+                    color: currentTheme.badgeText,
+                    borderColor: currentTheme.surfaceBorder,
+                  }}
+                >
+                  Tenant Workspace: {currentUser?.company || 'New Tenant'}
+                </span>
+                <span className="text-xs text-emerald-400 font-mono font-semibold flex items-center gap-1">
+                  <span className="h-1.5 w-1.5 rounded-full bg-emerald-400" />
+                  Isolated Sandbox Active
+                </span>
+              </div>
+              <h2 className="text-lg font-bold text-white">
+                Welcome, {currentUser?.name || 'Developer'}! Your AI Agent Guardrail is Ready.
+              </h2>
+              <p className="text-xs text-slate-300 max-w-2xl leading-relaxed">
+                This is your dedicated enterprise workspace. Your agents, policies, and telemetry are strictly private to {currentUser?.company || 'your team'}. Connect your first autonomous agent SDK below to begin intercepting tool calls pre-flight.
+              </p>
+            </div>
+
+            <Link
+              href="/dashboard/agents"
+              className="flex items-center gap-2 rounded-xl px-5 py-3 text-xs font-bold text-slate-950 transition-all hover:opacity-90 shadow-lg shrink-0 cursor-pointer"
+              style={{ backgroundColor: currentTheme.primary }}
+            >
+              <Bot className="h-4 w-4" />
+              <span>Connect First Agent</span>
+            </Link>
+          </div>
+
+          <div className="mt-4 pt-4 border-t grid grid-cols-1 md:grid-cols-3 gap-3 text-xs font-mono" style={{ borderColor: currentTheme.surfaceBorder }}>
+            <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+              <span className="text-slate-400 block text-[10px]">1. INSTALL SDK</span>
+              <code className="text-emerald-400 text-[11px]">pip install sentinelops-guard</code>
+            </div>
+            <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+              <span className="text-slate-400 block text-[10px]">2. SET AGENT PRIVILEGE</span>
+              <span className="text-white text-[11px]">Read-Only / Human Sign-Off</span>
+            </div>
+            <div className="p-2.5 rounded-lg bg-black/40 border border-white/5">
+              <span className="text-slate-400 block text-[10px]">3. MONTHLY QUOTA</span>
+              <span style={{ color: currentTheme.primary }} className="text-[11px] font-bold">
+                {(currentUser?.toolCallsUsed || 0).toLocaleString()} / {(currentUser?.toolCallsLimit || 50000).toLocaleString()} Calls
+              </span>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* 4 CORE METRIC CARDS */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -65,10 +165,16 @@ export default function DashboardOverviewPage() {
             <Bot className="h-5 w-5" style={{ color: currentTheme.primary }} />
           </div>
           <div className="mt-4">
-            <div className="text-3xl font-black text-white">{INITIAL_AGENTS.length}</div>
+            <div className="text-3xl font-black text-white">{displayedAgents.length}</div>
             <div className="flex items-center gap-1.5 text-[11px] text-emerald-400 font-mono mt-1.5 font-bold">
               <span className="h-2 w-2 rounded-full bg-emerald-400 animate-pulse" />
-              <span>3 Healthy, 1 Degraded</span>
+              <span>
+                {isMaster
+                  ? '3 Healthy, 1 Degraded'
+                  : displayedAgents.length === 0
+                  ? 'No agents connected yet'
+                  : `${displayedAgents.length} Active Agents`}
+              </span>
             </div>
           </div>
         </div>
@@ -86,7 +192,9 @@ export default function DashboardOverviewPage() {
             <Activity className="h-5 w-5" style={{ color: currentTheme.primary }} />
           </div>
           <div className="mt-4">
-            <div className="text-3xl font-black text-white">7,497</div>
+            <div className="text-3xl font-black text-white">
+              {isMaster ? '7,497' : (currentUser?.toolCallsUsed || 0).toLocaleString()}
+            </div>
             <div className="flex items-center gap-1.5 text-[11px] font-mono text-slate-400 mt-1.5">
               <span>Avg Latency: <strong style={{ color: currentTheme.accent }}>7.8ms</strong></span>
             </div>
@@ -164,12 +272,12 @@ export default function DashboardOverviewPage() {
             </div>
 
             <div className="divide-y" style={{ borderColor: currentTheme.surfaceBorder }}>
-              {alerts.filter(a => a.status !== 'RESOLVED').length === 0 ? (
+              {activeAlerts.length === 0 ? (
                 <div className="p-8 text-center text-xs font-mono text-emerald-400">
-                  ✓ All security alerts resolved. Zero active incidents.
+                  ✓ All security checks clean. Zero active incidents for this workspace.
                 </div>
               ) : (
-                alerts.filter(a => a.status !== 'RESOLVED').map((alert) => (
+                activeAlerts.map((alert) => (
                 <div key={alert.id} className="p-4 hover:bg-white/[0.02] transition-colors flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -230,28 +338,34 @@ export default function DashboardOverviewPage() {
             </div>
 
             <div className="divide-y text-xs font-mono" style={{ borderColor: currentTheme.surfaceBorder }}>
-              {INITIAL_AUDIT_EVENTS.map((evt) => (
-                <div key={evt.id} className="p-4 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3 overflow-hidden">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 border ${
-                      evt.decision === 'ALLOW'
-                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
-                        : evt.decision === 'DENY'
-                        ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
-                        : 'bg-amber-500/20 text-amber-400 border-amber-500/40'
-                    }`}>
-                      {evt.decision}
-                    </span>
-                    <span className="text-white font-medium truncate">{evt.agentName}</span>
-                    <span className="text-slate-500">→</span>
-                    <span className="truncate font-semibold" style={{ color: currentTheme.accent }}>{evt.toolName}()</span>
-                  </div>
+              {isMaster ? (
+                INITIAL_AUDIT_EVENTS.map((evt) => (
+                  <div key={evt.id} className="p-4 flex items-center justify-between gap-4">
+                    <div className="flex items-center gap-3 overflow-hidden">
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold shrink-0 border ${
+                        evt.decision === 'ALLOW'
+                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
+                          : evt.decision === 'DENY'
+                          ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+                          : 'bg-amber-500/20 text-amber-400 border-amber-500/40'
+                      }`}>
+                        {evt.decision}
+                      </span>
+                      <span className="text-white font-medium truncate">{evt.agentName}</span>
+                      <span className="text-slate-500">→</span>
+                      <span className="truncate font-semibold" style={{ color: currentTheme.accent }}>{evt.toolName}()</span>
+                    </div>
 
-                  <div className="text-[10px] text-slate-500 shrink-0 hidden sm:block">
-                    hash:{evt.eventHash.slice(0, 12)}...
+                    <div className="text-[10px] text-slate-500 shrink-0 hidden sm:block">
+                      hash:{evt.eventHash.slice(0, 12)}...
+                    </div>
                   </div>
+                ))
+              ) : (
+                <div className="p-8 text-center text-xs font-mono text-slate-400">
+                  Zero intercepted tool events for this workspace. Events will stream in live once an agent is active.
                 </div>
-              ))}
+              )}
             </div>
           </div>
         </div>
@@ -273,30 +387,45 @@ export default function DashboardOverviewPage() {
             </div>
 
             <div className="space-y-3.5">
-              {INITIAL_AGENTS.map((agent) => (
-                <div
-                  key={agent.id}
-                  className="p-3.5 rounded-xl border bg-black/25"
-                  style={{ borderColor: currentTheme.surfaceBorder }}
-                >
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-semibold text-white">{agent.name}</span>
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
-                      agent.status === 'healthy'
-                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
-                        : agent.status === 'degraded'
-                        ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
-                        : 'bg-white/5 text-slate-400 border-white/10'
-                    }`}>
-                      {agent.status}
-                    </span>
-                  </div>
-                  <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
-                    <span>{agent.tools.length} Tools Guarded</span>
-                    <span>{agent.lastSeen}</span>
-                  </div>
+              {displayedAgents.length === 0 ? (
+                <div className="p-6 rounded-xl border border-dashed text-center font-mono space-y-2 bg-black/20" style={{ borderColor: currentTheme.surfaceBorder }}>
+                  <Bot className="h-6 w-6 mx-auto text-slate-500" />
+                  <p className="text-xs text-white font-semibold">No Agents Connected</p>
+                  <p className="text-[11px] text-slate-400">Connect your first agent to this tenant workspace.</p>
+                  <Link
+                    href="/dashboard/agents"
+                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold text-slate-950 mt-1"
+                    style={{ backgroundColor: currentTheme.primary }}
+                  >
+                    Connect Agent
+                  </Link>
                 </div>
-              ))}
+              ) : (
+                displayedAgents.map((agent) => (
+                  <div
+                    key={agent.id}
+                    className="p-3.5 rounded-xl border bg-black/25"
+                    style={{ borderColor: currentTheme.surfaceBorder }}
+                  >
+                    <div className="flex items-center justify-between">
+                      <span className="text-xs font-semibold text-white">{agent.name}</span>
+                      <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
+                        agent.status === 'healthy'
+                          ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/30'
+                          : agent.status === 'degraded'
+                          ? 'bg-amber-500/20 text-amber-400 border-amber-500/30'
+                          : 'bg-white/5 text-slate-400 border-white/10'
+                      }`}>
+                        {agent.status}
+                      </span>
+                    </div>
+                    <div className="mt-2 text-[11px] text-slate-400 flex items-center justify-between font-mono">
+                      <span>{agent.tools.length} Tools Guarded</span>
+                      <span>{agent.lastSeen}</span>
+                    </div>
+                  </div>
+                ))
+              )}
             </div>
           </div>
 

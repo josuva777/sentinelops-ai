@@ -1,14 +1,35 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { INITIAL_AGENTS } from '../../../lib/dataStore';
 import { Agent } from '../../../lib/types';
 import { useTheme } from '../../../lib/themeContext';
+import { useAuth } from '../../../lib/authContext';
 import { Bot, Plus, Shield, Search, CheckCircle2, AlertTriangle, Key, ExternalLink, X } from 'lucide-react';
 
 export default function AgentInventoryPage() {
   const { currentTheme } = useTheme();
-  const [agents, setAgents] = useState<Agent[]>(INITIAL_AGENTS);
+  const { currentUser } = useAuth();
+  const isMaster = Boolean(currentUser?.isMasterAdmin);
+
+  const [agents, setAgents] = useState<Agent[]>([]);
+
+  useEffect(() => {
+    if (isMaster) {
+      setAgents(INITIAL_AGENTS);
+    } else if (currentUser?.id) {
+      try {
+        const stored = localStorage.getItem(`sentinelops_agents_${currentUser.id}`);
+        if (stored) {
+          setAgents(JSON.parse(stored));
+        } else {
+          setAgents([]);
+        }
+      } catch {
+        setAgents([]);
+      }
+    }
+  }, [isMaster, currentUser?.id]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedAgent, setSelectedAgent] = useState<Agent | null>(null);
   const [showRegisterModal, setShowRegisterModal] = useState(false);
@@ -38,7 +59,11 @@ export default function AgentInventoryPage() {
       evaluatedActions: 0,
     };
 
-    setAgents([newAgent, ...agents]);
+    const updated = [newAgent, ...agents];
+    setAgents(updated);
+    if (!isMaster && currentUser?.id) {
+      localStorage.setItem(`sentinelops_agents_${currentUser.id}`, JSON.stringify(updated));
+    }
     setNewAgentName('');
     setShowRegisterModal(false);
   };
@@ -82,9 +107,43 @@ export default function AgentInventoryPage() {
         />
       </div>
 
-      {/* Agents Grid */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-        {filteredAgents.map((agent) => (
+      {/* Agents Grid or Empty State */}
+      {agents.length === 0 ? (
+        <div
+          className="p-12 rounded-2xl border text-center font-mono space-y-4 shadow-xl"
+          style={{
+            backgroundColor: currentTheme.surface,
+            borderColor: currentTheme.surfaceBorder,
+          }}
+        >
+          <div
+            className="w-12 h-12 rounded-2xl border mx-auto flex items-center justify-center shadow-md"
+            style={{
+              backgroundColor: currentTheme.badgeBg,
+              borderColor: currentTheme.surfaceBorder,
+              color: currentTheme.primary,
+            }}
+          >
+            <Bot className="h-6 w-6" />
+          </div>
+          <div className="space-y-1">
+            <h3 className="text-base font-bold text-white">No Autonomous Agents Connected</h3>
+            <p className="text-xs text-slate-400 max-w-md mx-auto">
+              Your tenant workspace for {currentUser?.company || 'your team'} is completely private. Connect your first agent to generate an isolated authentication token and bind deterministic policies.
+            </p>
+          </div>
+          <button
+            onClick={() => setShowRegisterModal(true)}
+            className="inline-flex items-center gap-2 rounded-xl px-5 py-2.5 text-xs font-bold text-slate-950 transition-all hover:opacity-90 shadow-md cursor-pointer"
+            style={{ backgroundColor: currentTheme.primary }}
+          >
+            <Plus className="h-4 w-4" />
+            <span>Register First Agent</span>
+          </button>
+        </div>
+      ) : (
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+          {filteredAgents.map((agent) => (
           <div
             key={agent.id}
             onClick={() => setSelectedAgent(agent)}
@@ -147,6 +206,7 @@ export default function AgentInventoryPage() {
           </div>
         ))}
       </div>
+      )}
 
       {/* AGENT DETAIL DRAWER / MODAL */}
       {selectedAgent && (
