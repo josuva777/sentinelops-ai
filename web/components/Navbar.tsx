@@ -1,8 +1,9 @@
 'use client';
 
 import Link from 'next/link';
-import { Shield, ArrowRight } from 'lucide-react';
+import { Shield, ArrowRight, Smartphone } from 'lucide-react';
 import { ThemeSelector } from './ThemeSelector';
+import { InstallDesktopApp } from './InstallDesktopApp';
 import { useTheme } from '../lib/themeContext';
 
 export function Navbar() {
@@ -62,9 +63,21 @@ export function Navbar() {
           <Link href="/pricing" className="hover:text-white transition-colors font-semibold">
             Pricing
           </Link>
+          <a
+            href="/downloads/sentinelops-mobile.apk"
+            download
+            className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white transition-colors"
+            title="Download Android Companion APK"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+            <span>Mobile APK</span>
+          </a>
         </nav>
 
         <div className="flex items-center gap-3">
+          {/* Desktop Web App Installer */}
+          <InstallDesktopApp />
+
           {/* Theme Palette Switcher */}
           <ThemeSelector />
 

@@ -3,29 +3,54 @@
 import React, { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
-import { Shield, ArrowRight, Lock } from 'lucide-react';
+import { Shield, ArrowRight, Lock, UserPlus, AlertOctagon, CheckCircle2, Building2 } from 'lucide-react';
 import { useTheme } from '../../lib/themeContext';
+import { useAuth, UserRole } from '../../lib/authContext';
 
 export default function LoginPage() {
   const router = useRouter();
   const { currentTheme } = useTheme();
+  const { login, register } = useAuth();
+
+  const [mode, setMode] = useState<'signin' | 'register'>('signin');
   const [email, setEmail] = useState('elena.rostova@enterprise.corp');
   const [password, setPassword] = useState('••••••••••••');
-  const [role, setRole] = useState('SECURITY_ADMINISTRATOR');
+  const [name, setName] = useState('Elena Rostova');
+  const [company, setCompany] = useState('Apex Global Inc.');
+  const [role, setRole] = useState<UserRole>('SUPER_ADMIN');
+  const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleLogin = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg(null);
     setIsLoading(true);
+
     setTimeout(() => {
+      if (mode === 'signin') {
+        const result = login(email, role);
+        if (!result.success) {
+          setErrorMsg(result.error || 'Authentication failed.');
+          setIsLoading(false);
+          return;
+        }
+      } else {
+        const result = register(name, email, company);
+        if (!result.success) {
+          setErrorMsg(result.error || 'Registration failed.');
+          setIsLoading(false);
+          return;
+        }
+      }
+
       setIsLoading(false);
       router.push('/dashboard');
-    }, 350);
+    }, 300);
   };
 
   return (
     <div
-      className="min-h-screen flex flex-col justify-center items-center px-4 relative transition-colors duration-400"
+      className="min-h-screen flex flex-col justify-center items-center px-4 relative transition-colors duration-300"
       style={{ backgroundColor: currentTheme.background }}
     >
       <div className="absolute inset-0 bg-grid-pattern opacity-25 radial-fade pointer-events-none" />
@@ -35,7 +60,7 @@ export default function LoginPage() {
         style={{
           backgroundColor: currentTheme.surface,
           borderColor: currentTheme.surfaceBorder,
-          boxShadow: `0 25px 50px -12px rgba(0,0,0,0.9), 0 0 30px -8px ${currentTheme.glow}`,
+          boxShadow: `0 25px 50px -12px rgba(0,0,0,0.95), 0 0 35px -8px ${currentTheme.glow}`,
         }}
       >
         <div className="text-center space-y-2">
@@ -52,25 +77,108 @@ export default function LoginPage() {
             </div>
             <span className="text-xl font-extrabold text-white tracking-tight">SentinelOps AI</span>
           </Link>
-          <h1 className="text-lg font-bold text-white">Sign In to Security Operations</h1>
-          <p className="text-xs text-slate-400">Enter authorized enterprise workspace credentials</p>
+          <h1 className="text-lg font-bold text-white">
+            {mode === 'signin' ? 'Sign In to Operations Console' : 'Create Enterprise Tenant Account'}
+          </h1>
+          <p className="text-xs text-slate-400">
+            {mode === 'signin'
+              ? 'Enter authorized enterprise credentials & RBAC profile'
+              : 'Register your organization to start in-line agent guardrails'}
+          </p>
         </div>
 
-        <form onSubmit={handleLogin} className="space-y-4 font-mono text-xs">
+        {/* Tab Switcher */}
+        <div
+          className="flex p-1 rounded-xl border text-xs font-mono"
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            borderColor: currentTheme.surfaceBorder,
+          }}
+        >
+          <button
+            type="button"
+            onClick={() => {
+              setMode('signin');
+              setErrorMsg(null);
+            }}
+            className={`flex-1 py-1.5 rounded-lg text-center font-semibold transition-all ${
+              mode === 'signin' ? 'bg-white/10 text-white shadow' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Sign In
+          </button>
+          <button
+            type="button"
+            onClick={() => {
+              setMode('register');
+              setErrorMsg(null);
+              setEmail('');
+            }}
+            className={`flex-1 py-1.5 rounded-lg text-center font-semibold transition-all ${
+              mode === 'register' ? 'bg-white/10 text-white shadow' : 'text-slate-400 hover:text-white'
+            }`}
+          >
+            Create Account
+          </button>
+        </div>
+
+        {errorMsg && (
+          <div className="p-3.5 rounded-xl border border-rose-500/40 bg-rose-500/10 text-rose-300 text-xs flex items-start gap-2.5">
+            <AlertOctagon className="w-4 h-4 text-rose-400 shrink-0 mt-0.5" />
+            <div className="leading-relaxed">{errorMsg}</div>
+          </div>
+        )}
+
+        <form onSubmit={handleSubmit} className="space-y-4 font-mono text-xs">
+          {mode === 'register' && (
+            <>
+              <div>
+                <label className="block text-slate-400 font-semibold mb-1">Full Name</label>
+                <input
+                  type="text"
+                  required
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  placeholder="Elena Rostova"
+                  className="w-full rounded-xl border bg-black/40 px-3.5 py-2.5 text-white focus:outline-none"
+                  style={{ borderColor: currentTheme.surfaceBorder }}
+                />
+              </div>
+              <div>
+                <label className="block text-slate-400 font-semibold mb-1">Company / Organization</label>
+                <input
+                  type="text"
+                  required
+                  value={company}
+                  onChange={(e) => setCompany(e.target.value)}
+                  placeholder="Acme Financial"
+                  className="w-full rounded-xl border bg-black/40 px-3.5 py-2.5 text-white focus:outline-none"
+                  style={{ borderColor: currentTheme.surfaceBorder }}
+                />
+              </div>
+            </>
+          )}
+
           <div>
-            <label className="block text-slate-400 font-semibold mb-1">Corporate Email</label>
+            <label className="block text-slate-400 font-semibold mb-1">Corporate Work Email</label>
             <input
               type="email"
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
+              placeholder="elena@enterprise.corp"
               className="w-full rounded-xl border bg-black/40 px-3.5 py-2.5 text-white focus:outline-none"
               style={{ borderColor: currentTheme.surfaceBorder }}
             />
+            {mode === 'register' && (
+              <p className="text-[10px] text-slate-400 mt-1 font-mono">
+                🛡️ Anti-Sybil Guard: Burner/disposable email domains are blocked.
+              </p>
+            )}
           </div>
 
           <div>
-            <label className="block text-slate-400 font-semibold mb-1">Password / Hardware Key</label>
+            <label className="block text-slate-400 font-semibold mb-1">Password</label>
             <input
               type="password"
               required
@@ -81,34 +189,48 @@ export default function LoginPage() {
             />
           </div>
 
-          <div>
-            <label className="block text-slate-400 font-semibold mb-1">Simulated Workspace Role</label>
-            <select
-              value={role}
-              onChange={(e) => setRole(e.target.value)}
-              className="w-full rounded-xl border bg-black/40 px-3.5 py-2.5 text-white focus:outline-none"
-              style={{ borderColor: currentTheme.surfaceBorder }}
-            >
-              <option value="SECURITY_ADMINISTRATOR">Security Administrator (Full Policy & Agent Control)</option>
-              <option value="APPROVER">Approver (Human Sign-off Authorized)</option>
-              <option value="DEVELOPER">Developer (Agent Registration & Diagnostics)</option>
-              <option value="READ_ONLY_AUDITOR">Read-Only Auditor (Audit Ledger Inspection)</option>
-            </select>
-          </div>
+          {mode === 'signin' && (
+            <div>
+              <label className="block text-slate-400 font-semibold mb-1">Access Role Profile</label>
+              <select
+                value={role}
+                onChange={(e) => setRole(e.target.value as UserRole)}
+                className="w-full rounded-xl border bg-black/40 px-3.5 py-2.5 text-white focus:outline-none"
+                style={{ borderColor: currentTheme.surfaceBorder }}
+              >
+                <option value="SUPER_ADMIN">Super Administrator (Full Admin Center & Kill-Switch)</option>
+                <option value="SECOPS_ARCHITECT">SecOps Architect (Policy & In-Line Config)</option>
+                <option value="DEVELOPER">Developer / Operator (Free Tier Fleet Explorer)</option>
+              </select>
+            </div>
+          )}
 
           <button
             type="submit"
             disabled={isLoading}
-            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 text-xs font-bold text-slate-950 transition-all hover:opacity-90 shadow-lg disabled:opacity-50"
+            className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-bold text-slate-950 transition-all hover:opacity-90 disabled:opacity-50 shadow-lg mt-2"
             style={{ backgroundColor: currentTheme.primary }}
           >
-            <span>{isLoading ? 'Verifying Session...' : 'Authenticate & Enter Console'}</span>
-            <ArrowRight className="h-4 w-4" />
+            {isLoading ? (
+              <span>Verifying Telemetry Credentials...</span>
+            ) : mode === 'signin' ? (
+              <>
+                <span>Authenticate Session</span>
+                <ArrowRight className="h-4 w-4" />
+              </>
+            ) : (
+              <>
+                <UserPlus className="h-4 w-4" />
+                <span>Create Organization Workspace</span>
+              </>
+            )}
           </button>
         </form>
 
-        <div className="pt-4 border-t text-center text-xs text-slate-500 font-mono" style={{ borderColor: currentTheme.surfaceBorder }}>
-          Strict tenant isolation enforced. Multi-factor authenticated.
+        <div className="pt-2 text-center text-[11px] font-mono text-slate-400">
+          <Link href="/" className="hover:text-white transition-colors">
+            ← Back to Public Website
+          </Link>
         </div>
       </div>
     </div>

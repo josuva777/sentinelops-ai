@@ -1,7 +1,9 @@
 'use client';
 
 import React, { useState } from 'react';
+import Link from 'next/link';
 import { useTheme } from '../../../lib/themeContext';
+import { useAuth, UserSession } from '../../../lib/authContext';
 import {
   ShieldAlert,
   Key,
@@ -17,16 +19,12 @@ import {
   Cpu,
   Layers,
   FileText,
+  UserX,
+  ShieldCheck,
+  AlertOctagon,
+  ArrowRight,
+  Shield,
 } from 'lucide-react';
-
-interface TeamMember {
-  id: string;
-  name: string;
-  email: string;
-  role: 'Super Admin' | 'Security Architect' | 'Compliance Auditor' | 'Read-Only Operator';
-  status: 'active' | 'suspended';
-  lastActive: string;
-}
 
 interface ApiKeyItem {
   id: string;
@@ -37,13 +35,6 @@ interface ApiKeyItem {
   status: 'active' | 'revoked';
 }
 
-const INITIAL_MEMBERS: TeamMember[] = [
-  { id: 'usr_01', name: 'Alex Rivera', email: 'alex.rivera@enterprise.corp', role: 'Super Admin', status: 'active', lastActive: '2 minutes ago' },
-  { id: 'usr_02', name: 'Siddharth Patel', email: 'siddharth@enterprise.corp', role: 'Security Architect', status: 'active', lastActive: '18 minutes ago' },
-  { id: 'usr_03', name: 'Elena Rostova', email: 'elena.audit@enterprise.corp', role: 'Compliance Auditor', status: 'active', lastActive: '1 hour ago' },
-  { id: 'usr_04', name: 'Marcus Chen', email: 'marcus.ops@enterprise.corp', role: 'Read-Only Operator', status: 'active', lastActive: 'Yesterday' },
-];
-
 const INITIAL_KEYS: ApiKeyItem[] = [
   { id: 'key_prod_01', name: 'Production Gateway Master Key', prefix: 'sn_live_8f3a...', scope: 'events:evaluate, approvals:write', createdAt: '2026-09-12', status: 'active' },
   { id: 'key_stag_02', name: 'Staging CI/CD Ingestion Key', prefix: 'sn_stag_4c1e...', scope: 'events:evaluate', createdAt: '2026-10-01', status: 'active' },
@@ -52,18 +43,74 @@ const INITIAL_KEYS: ApiKeyItem[] = [
 
 export default function AdminPage() {
   const { currentTheme } = useTheme();
+  const { currentUser, allUsers, suspendUser, reactivateUser, switchRole } = useAuth();
+
   const [killSwitchActive, setKillSwitchActive] = useState<boolean>(false);
-  const [members, setMembers] = useState<TeamMember[]>(INITIAL_MEMBERS);
   const [keys, setKeys] = useState<ApiKeyItem[]>(INITIAL_KEYS);
   const [showKeyModal, setShowKeyModal] = useState<boolean>(false);
   const [newKeyName, setNewKeyName] = useState<string>('');
   const [newKeyScope, setNewKeyScope] = useState<string>('events:evaluate, approvals:write');
   const [actionSuccess, setActionSuccess] = useState<string | null>(null);
 
+  // RBAC GUARD: Only SUPER_ADMIN can view the Operations Center
+  if (currentUser.role !== 'SUPER_ADMIN') {
+    return (
+      <div
+        className="max-w-2xl mx-auto my-16 p-8 rounded-3xl border shadow-2xl text-center space-y-6"
+        style={{
+          backgroundColor: currentTheme.surface,
+          borderColor: currentTheme.surfaceBorder,
+          boxShadow: `0 25px 60px -12px rgba(0,0,0,0.95), 0 0 35px -5px ${currentTheme.glow}`,
+        }}
+      >
+        <div className="w-16 h-16 rounded-2xl mx-auto flex items-center justify-center border text-rose-500 border-rose-500/30 bg-rose-500/10 shadow-lg">
+          <Lock className="w-8 h-8" />
+        </div>
+        <div>
+          <span className="text-[10px] font-mono uppercase tracking-widest px-2.5 py-1 rounded border border-rose-500/40 text-rose-400 bg-rose-500/10 font-bold">
+            HTTP 403 — Privileged Operations Center Restricted
+          </span>
+          <h2 className="text-2xl font-black text-white mt-3">Enterprise Admin Authorization Required</h2>
+          <p className="text-xs text-slate-400 mt-2 max-w-md mx-auto leading-relaxed">
+            The Administration Center controls fleet kill-switches, master HMAC tokens, and account governance.
+            Your current session profile is <strong className="text-white font-mono">{currentUser.role}</strong> ({currentUser.email}).
+          </p>
+        </div>
+
+        <div className="p-4 rounded-xl border border-white/5 bg-black/40 text-left text-xs font-mono space-y-1.5 text-slate-400">
+          <div>• Workspace Organization: <strong className="text-white">{currentUser.company}</strong></div>
+          <div>• Assigned Role: <strong className="text-amber-400">{currentUser.role}</strong></div>
+          <div>• Anti-Hijacking Policy: <strong className="text-emerald-400">Hardware Session Token Bound</strong></div>
+        </div>
+
+        <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
+          <button
+            onClick={() => switchRole('SUPER_ADMIN')}
+            className="px-5 py-2.5 rounded-xl font-mono text-xs font-bold text-slate-950 transition-all hover:opacity-90 shadow-lg"
+            style={{ backgroundColor: currentTheme.primary }}
+          >
+            Elevate to Super Admin (Demo Mode)
+          </button>
+          <Link
+            href="/dashboard"
+            className="px-5 py-2.5 rounded-xl border font-mono text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
+            style={{ borderColor: currentTheme.surfaceBorder }}
+          >
+            Return to Overview
+          </Link>
+        </div>
+      </div>
+    );
+  }
+
   const toggleKillSwitch = () => {
     const next = !killSwitchActive;
     setKillSwitchActive(next);
-    setActionSuccess(next ? 'EMERGENCY LOCKDOWN ACTIVATED: All agent tool calls are halted immediately!' : 'Normal enforcement mode restored.');
+    setActionSuccess(
+      next
+        ? 'EMERGENCY LOCKDOWN ACTIVATED: All agent tool calls are halted immediately!'
+        : 'Normal enforcement mode restored.'
+    );
     setTimeout(() => setActionSuccess(null), 4000);
   };
 
@@ -87,7 +134,7 @@ export default function AdminPage() {
   };
 
   const handleRevokeKey = (keyId: string) => {
-    setKeys(keys.map(k => k.id === keyId ? { ...k, status: 'revoked' } : k));
+    setKeys(keys.map((k) => (k.id === keyId ? { ...k, status: 'revoked' } : k)));
     setActionSuccess('Master Ingestion Key revoked immediately.');
     setTimeout(() => setActionSuccess(null), 4000);
   };
@@ -108,13 +155,13 @@ export default function AdminPage() {
             >
               Enterprise Admin Center
             </span>
-            <span className="text-xs font-mono text-slate-500">Tenant: org_ent_9821</span>
+            <span className="text-xs font-mono text-slate-500">Tenant: {currentUser.company}</span>
           </div>
           <h1 className="text-2xl sm:text-3xl font-extrabold text-white mt-1">
             Platform Administration & Fleet Controls
           </h1>
           <p className="text-xs sm:text-sm text-slate-400 mt-1">
-            Super-admin settings, fleet kill-switch, cryptographic token management, and role-based access control.
+            Super-admin operations, fleet kill-switch, session governance, and cryptographic HMAC token management.
           </p>
         </div>
 
@@ -134,201 +181,178 @@ export default function AdminPage() {
       {/* Success Notification Alert */}
       {actionSuccess && (
         <div
-          className="p-4 rounded-xl border flex items-center justify-between font-mono text-xs shadow-lg animate-in fade-in slide-in-from-top-2"
+          className="p-4 rounded-xl border flex items-center justify-between font-mono text-xs shadow-lg animate-in fade-in"
           style={{
             borderColor: killSwitchActive ? '#f43f5e' : currentTheme.primary,
             backgroundColor: killSwitchActive ? 'rgba(244, 63, 94, 0.15)' : currentTheme.badgeBg,
-            color: '#ffffff',
+            color: killSwitchActive ? '#f43f5e' : currentTheme.badgeText,
           }}
         >
-          <div className="flex items-center gap-2">
-            <CheckCircle2 className="w-4 h-4" style={{ color: killSwitchActive ? '#f43f5e' : currentTheme.primary }} />
+          <div className="flex items-center gap-2.5">
+            {killSwitchActive ? <AlertTriangle className="w-4 h-4" /> : <CheckCircle2 className="w-4 h-4" />}
             <span>{actionSuccess}</span>
           </div>
           <button onClick={() => setActionSuccess(null)} className="text-slate-400 hover:text-white">✕</button>
         </div>
       )}
 
-      {/* EMERGENCY FLEET KILL-SWITCH HERO BANNER */}
+      {/* EMERGENCY FLEET KILL-SWITCH HERO PANEL */}
       <div
-        className="rounded-2xl border p-6 transition-all duration-300 shadow-2xl relative overflow-hidden"
+        className={`rounded-2xl border-2 p-6 sm:p-8 transition-all duration-300 shadow-2xl relative overflow-hidden ${
+          killSwitchActive
+            ? 'border-rose-500 bg-rose-950/20 shadow-rose-900/30'
+            : 'border-white/10 bg-black/40'
+        }`}
+      >
+        <div className="flex flex-col lg:flex-row lg:items-center justify-between gap-6 relative z-10">
+          <div className="space-y-2 max-w-2xl">
+            <div className="flex items-center gap-2">
+              <ShieldAlert className={`w-5 h-5 ${killSwitchActive ? 'text-rose-500 animate-pulse' : 'text-slate-400'}`} />
+              <span className={`text-xs font-mono font-bold tracking-wider uppercase ${killSwitchActive ? 'text-rose-400' : 'text-slate-400'}`}>
+                Emergency Operations Control
+              </span>
+            </div>
+            <h2 className="text-xl sm:text-2xl font-black text-white">
+              Global Autonomous Fleet Kill-Switch
+            </h2>
+            <p className="text-xs sm:text-sm text-slate-300 leading-relaxed">
+              Instantly terminates all inbound tool invocations across all 4 monitored agents. When active, every pre-flight gate returns <strong className="text-rose-400 font-mono">DENY (FAIL-CLOSED LOCKDOWN)</strong> within sub-1ms, severing unauthorized DB/API mutations.
+            </p>
+          </div>
+
+          <div className="flex flex-col sm:flex-row items-center gap-3 shrink-0">
+            <button
+              onClick={toggleKillSwitch}
+              className={`w-full sm:w-auto px-6 py-3.5 rounded-xl font-mono text-xs font-black tracking-wider transition-all duration-200 shadow-xl flex items-center justify-center gap-2.5 ${
+                killSwitchActive
+                  ? 'bg-emerald-500 text-slate-950 hover:bg-emerald-400 shadow-emerald-500/20'
+                  : 'bg-rose-600 text-white hover:bg-rose-500 shadow-rose-600/30'
+              }`}
+            >
+              <AlertTriangle className="w-4 h-4" />
+              <span>{killSwitchActive ? 'RESTORE NORMAL TRAFFIC' : 'TRIGGER EMERGENCY LOCKDOWN'}</span>
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* USER & SESSION GOVERNANCE DIRECTORY (ANTI-HIJACKING) */}
+      <div
+        className="rounded-2xl border p-6 shadow-xl"
         style={{
-          borderColor: killSwitchActive ? '#f43f5e' : currentTheme.surfaceBorder,
           backgroundColor: currentTheme.surface,
-          boxShadow: killSwitchActive
-            ? '0 0 40px -5px rgba(244, 63, 94, 0.35)'
-            : `0 15px 30px -10px rgba(0,0,0,0.5)`,
+          borderColor: currentTheme.surfaceBorder,
         }}
       >
-        <div className="flex flex-col md:flex-row md:items-center justify-between gap-6">
-          <div className="flex items-start gap-4">
-            <div
-              className="w-12 h-12 rounded-2xl flex items-center justify-center border shrink-0 transition-colors"
-              style={{
-                backgroundColor: killSwitchActive ? 'rgba(244, 63, 94, 0.2)' : currentTheme.badgeBg,
-                borderColor: killSwitchActive ? '#f43f5e' : currentTheme.surfaceBorder,
-                color: killSwitchActive ? '#f43f5e' : currentTheme.primary,
-              }}
-            >
-              <ShieldAlert className="w-6 h-6" />
-            </div>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-2 mb-5">
+          <div className="flex items-center gap-2.5">
+            <Users className="w-5 h-5" style={{ color: currentTheme.primary }} />
             <div>
-              <div className="flex items-center gap-2">
-                <h3 className="text-base font-bold text-white">Global Autonomous Fleet Kill-Switch</h3>
-                <span
-                  className="text-[10px] font-mono px-2 py-0.5 rounded-full font-bold border"
-                  style={{
-                    backgroundColor: killSwitchActive ? 'rgba(244, 63, 94, 0.2)' : 'rgba(16, 185, 129, 0.2)',
-                    color: killSwitchActive ? '#f43f5e' : '#10b981',
-                    borderColor: killSwitchActive ? 'rgba(244, 63, 94, 0.4)' : 'rgba(16, 185, 129, 0.4)',
-                  }}
-                >
-                  {killSwitchActive ? 'LOCKDOWN ACTIVE' : 'SYSTEM ARMED & ENFORCING'}
-                </span>
-              </div>
-              <p className="text-xs text-slate-300 mt-1 max-w-2xl leading-relaxed">
-                Emergency override: activating this switch instructs all SentinelOps gateway nodes to immediately return 
-                <strong className="text-rose-400"> DENY</strong> for all inbound tool execution requests across all environments.
-              </p>
+              <h3 className="text-sm font-bold text-white">Active User Sessions & Anti-Hijacking Governance</h3>
+              <p className="text-[11px] text-slate-400">Monitor active sessions, terminate compromised accounts, and enforce hardware tokens</p>
             </div>
           </div>
+          <span className="text-[10px] font-mono text-slate-500">{allUsers.length} Registered Accounts</span>
+        </div>
 
-          <button
-            onClick={toggleKillSwitch}
-            className={`px-6 py-3 rounded-xl font-mono text-xs font-bold transition-all duration-300 border shadow-lg shrink-0 ${
-              killSwitchActive
-                ? 'bg-emerald-500 hover:bg-emerald-400 text-slate-950 border-emerald-400'
-                : 'bg-rose-600 hover:bg-rose-500 text-white border-rose-500'
-            }`}
-          >
-            {killSwitchActive ? 'RESTORE NORMAL TRAFFIC' : 'TRIGGER EMERGENCY LOCKDOWN'}
-          </button>
+        <div className="overflow-x-auto">
+          <table className="w-full text-left text-xs font-mono">
+            <thead>
+              <tr className="border-b text-slate-400 text-[11px]" style={{ borderColor: currentTheme.surfaceBorder }}>
+                <th className="pb-3 font-semibold">User & Organization</th>
+                <th className="pb-3 font-semibold">Role Profile</th>
+                <th className="pb-3 font-semibold">Plan Tier</th>
+                <th className="pb-3 font-semibold">Device & IP Location</th>
+                <th className="pb-3 font-semibold">Status</th>
+                <th className="pb-3 font-semibold text-right">Session Actions</th>
+              </tr>
+            </thead>
+            <tbody className="divide-y divide-white/5">
+              {allUsers.map((u) => {
+                const isCurrent = u.id === currentUser.id;
+                return (
+                  <tr key={u.id} className="hover:bg-white/[0.02] transition-colors">
+                    <td className="py-3.5">
+                      <div className="font-bold text-white flex items-center gap-2">
+                        <span>{u.name}</span>
+                        {isCurrent && (
+                          <span className="text-[9px] px-1.5 py-0.2 rounded bg-white/10 text-slate-300 font-sans">
+                            You
+                          </span>
+                        )}
+                      </div>
+                      <div className="text-[11px] text-slate-400">{u.email}</div>
+                      <div className="text-[10px] text-slate-500">{u.company}</div>
+                    </td>
+                    <td className="py-3.5">
+                      <span
+                        className="px-2 py-0.5 rounded text-[10px] font-bold border"
+                        style={{
+                          backgroundColor: currentTheme.badgeBg,
+                          borderColor: currentTheme.surfaceBorder,
+                          color: currentTheme.accent,
+                        }}
+                      >
+                        {u.role}
+                      </span>
+                    </td>
+                    <td className="py-3.5">
+                      <span className="font-bold text-slate-200">
+                        {u.tier === 'FREE' ? 'Starter (Free)' : u.tier === 'TEAM' ? '★ SecOps Team' : '🛡️ Enterprise'}
+                      </span>
+                      <div className="text-[10px] text-slate-500">
+                        {u.toolCallsUsed.toLocaleString()} / {u.toolCallsLimit.toLocaleString()} calls
+                      </div>
+                    </td>
+                    <td className="py-3.5 text-slate-400 max-w-xs truncate">
+                      <div className="text-white text-[11px]">{u.ipAddress}</div>
+                      <div className="text-[10px] text-slate-500 truncate">{u.device}</div>
+                    </td>
+                    <td className="py-3.5">
+                      {u.isSuspended ? (
+                        <span className="inline-flex items-center gap-1.5 text-rose-400 text-[11px] font-bold">
+                          <span className="w-1.5 h-1.5 rounded-full bg-rose-500" />
+                          Suspended (Locked)
+                        </span>
+                      ) : (
+                        <span className="inline-flex items-center gap-1.5 text-emerald-400 text-[11px]">
+                          <span className="w-1.5 h-1.5 rounded-full bg-emerald-400 animate-pulse" />
+                          Active
+                        </span>
+                      )}
+                    </td>
+                    <td className="py-3.5 text-right space-x-2">
+                      {u.isSuspended ? (
+                        <button
+                          onClick={() => {
+                            reactivateUser(u.id);
+                            setActionSuccess(`Account '${u.email}' reactivated successfully.`);
+                          }}
+                          className="text-[11px] text-emerald-400 hover:underline font-bold"
+                        >
+                          Reactivate
+                        </button>
+                      ) : (
+                        <button
+                          onClick={() => {
+                            suspendUser(u.id);
+                            setActionSuccess(`Account '${u.email}' suspended immediately. All session tokens revoked.`);
+                          }}
+                          className="text-[11px] text-rose-400 hover:text-rose-300 hover:underline"
+                        >
+                          Terminate / Suspend
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
         </div>
       </div>
 
-      {/* TWO COLUMN GRID: API KEYS & GATEWAY TELEMETRY */}
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-        {/* Master API Keys Management (2 cols) */}
-        <div
-          className="lg:col-span-2 rounded-2xl border p-6 shadow-xl"
-          style={{
-            backgroundColor: currentTheme.surface,
-            borderColor: currentTheme.surfaceBorder,
-          }}
-        >
-          <div className="flex items-center justify-between mb-5">
-            <div className="flex items-center gap-2.5">
-              <Key className="w-5 h-5" style={{ color: currentTheme.primary }} />
-              <div>
-                <h3 className="text-sm font-bold text-white">Master Ingestion API Keys</h3>
-                <p className="text-[11px] text-slate-400">HMAC-SHA256 authenticated gateway ingress credentials</p>
-              </div>
-            </div>
-            <span className="text-[10px] font-mono text-slate-500">{keys.filter(k => k.status === 'active').length} Active</span>
-          </div>
-
-          <div className="space-y-3">
-            {keys.map((k) => (
-              <div
-                key={k.id}
-                className="p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-black/20"
-                style={{ borderColor: currentTheme.surfaceBorder }}
-              >
-                <div>
-                  <div className="flex items-center gap-2">
-                    <span className="text-xs font-bold text-white">{k.name}</span>
-                    <span
-                      className={`text-[9px] font-mono px-1.5 py-0.5 rounded border uppercase ${
-                        k.status === 'active' ? 'text-emerald-400 border-emerald-500/30' : 'text-rose-400 border-rose-500/30'
-                      }`}
-                    >
-                      {k.status}
-                    </span>
-                  </div>
-                  <div className="flex items-center gap-3 mt-1.5 text-[11px] font-mono text-slate-400">
-                    <span className="text-slate-300 font-semibold">{k.prefix}</span>
-                    <span>•</span>
-                    <span>Scope: {k.scope}</span>
-                    <span>•</span>
-                    <span>Issued: {k.createdAt}</span>
-                  </div>
-                </div>
-
-                {k.status === 'active' && (
-                  <button
-                    onClick={() => handleRevokeKey(k.id)}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-[11px] font-mono text-rose-400 hover:bg-rose-500/10 border-rose-500/30 transition-colors self-end sm:self-center"
-                  >
-                    <Trash2 className="w-3.5 h-3.5" />
-                    <span>Revoke</span>
-                  </button>
-                )}
-              </div>
-            ))}
-          </div>
-        </div>
-
-        {/* Node Infrastructure Health (1 col) */}
-        <div
-          className="rounded-2xl border p-6 shadow-xl flex flex-col justify-between"
-          style={{
-            backgroundColor: currentTheme.surface,
-            borderColor: currentTheme.surfaceBorder,
-          }}
-        >
-          <div>
-            <div className="flex items-center gap-2 mb-4">
-              <Server className="w-5 h-5" style={{ color: currentTheme.primary }} />
-              <h3 className="text-sm font-bold text-white">Gateway Ingestion Nodes</h3>
-            </div>
-            <p className="text-xs text-slate-400 mb-5 leading-relaxed">
-              Global deterministic evaluation nodes maintaining zero-latency fail-closed state machines.
-            </p>
-
-            <div className="space-y-3 font-mono text-xs">
-              <div className="p-3 rounded-xl border bg-black/25 flex items-center justify-between" style={{ borderColor: currentTheme.surfaceBorder }}>
-                <div>
-                  <div className="font-bold text-white text-[11px]">node-us-east-virginia</div>
-                  <div className="text-[10px] text-slate-400">Primary Gateway</div>
-                </div>
-                <div className="text-right">
-                  <span className="text-emerald-400 text-[10px] font-bold">ONLINE</span>
-                  <div className="text-[10px] text-slate-400 mt-0.5">8.4ms avg</div>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl border bg-black/25 flex items-center justify-between" style={{ borderColor: currentTheme.surfaceBorder }}>
-                <div>
-                  <div className="font-bold text-white text-[11px]">node-eu-west-frankfurt</div>
-                  <div className="text-[10px] text-slate-400">Failover Cluster</div>
-                </div>
-                <div className="text-right">
-                  <span className="text-emerald-400 text-[10px] font-bold">ONLINE</span>
-                  <div className="text-[10px] text-slate-400 mt-0.5">11.1ms avg</div>
-                </div>
-              </div>
-
-              <div className="p-3 rounded-xl border bg-black/25 flex items-center justify-between" style={{ borderColor: currentTheme.surfaceBorder }}>
-                <div>
-                  <div className="font-bold text-white text-[11px]">node-ap-southeast-singapore</div>
-                  <div className="text-[10px] text-slate-400">Regional Gateway</div>
-                </div>
-                <div className="text-right">
-                  <span className="text-emerald-400 text-[10px] font-bold">ONLINE</span>
-                  <div className="text-[10px] text-slate-400 mt-0.5">9.6ms avg</div>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="mt-6 pt-4 border-t flex items-center justify-between text-xs font-mono text-slate-400" style={{ borderColor: currentTheme.surfaceBorder }}>
-            <span>Block Chaining Height</span>
-            <span className="font-bold text-white">#1,842 sealed</span>
-          </div>
-        </div>
-      </div>
-
-      {/* TEAM DIRECTORY & RBAC MATRIX */}
+      {/* MASTER KEYS DIRECTORY */}
       <div
         className="rounded-2xl border p-6 shadow-xl"
         style={{
@@ -338,56 +362,57 @@ export default function AdminPage() {
       >
         <div className="flex items-center justify-between mb-5">
           <div className="flex items-center gap-2.5">
-            <Users className="w-5 h-5" style={{ color: currentTheme.primary }} />
+            <Key className="w-5 h-5" style={{ color: currentTheme.primary }} />
             <div>
-              <h3 className="text-sm font-bold text-white">Organization Access & Role Matrix</h3>
-              <p className="text-[11px] text-slate-400">Server-enforced access controls across security roles</p>
+              <h3 className="text-sm font-bold text-white">Cryptographic Ingestion & Gateway Keys</h3>
+              <p className="text-[11px] text-slate-400">SHA-256 HMAC master credentials for in-line runtime authorization</p>
             </div>
           </div>
-          <span className="text-[10px] font-mono text-slate-500">{members.length} Members</span>
+          <span className="text-[10px] font-mono text-slate-500">{keys.length} Active Keys</span>
         </div>
 
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
             <thead>
               <tr className="border-b text-slate-400 text-[11px]" style={{ borderColor: currentTheme.surfaceBorder }}>
-                <th className="pb-3 font-semibold">User</th>
-                <th className="pb-3 font-semibold">Role</th>
+                <th className="pb-3 font-semibold">Label & Prefix</th>
+                <th className="pb-3 font-semibold">Scope</th>
+                <th className="pb-3 font-semibold">Created</th>
                 <th className="pb-3 font-semibold">Status</th>
-                <th className="pb-3 font-semibold">Last Active</th>
                 <th className="pb-3 font-semibold text-right">Actions</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-white/5">
-              {members.map((m) => (
-                <tr key={m.id} className="hover:bg-white/[0.02] transition-colors">
+              {keys.map((k) => (
+                <tr key={k.id} className="hover:bg-white/[0.02] transition-colors">
                   <td className="py-3.5">
-                    <div className="font-bold text-white">{m.name}</div>
-                    <div className="text-[11px] text-slate-400">{m.email}</div>
+                    <div className="font-bold text-white">{k.name}</div>
+                    <div className="text-[11px] text-slate-400">{k.prefix}</div>
                   </td>
+                  <td className="py-3.5 text-slate-300">{k.scope}</td>
+                  <td className="py-3.5 text-slate-400">{k.createdAt}</td>
                   <td className="py-3.5">
-                    <span
-                      className="px-2 py-0.5 rounded text-[10px] font-bold border"
-                      style={{
-                        backgroundColor: currentTheme.badgeBg,
-                        borderColor: currentTheme.surfaceBorder,
-                        color: currentTheme.accent,
-                      }}
-                    >
-                      {m.role}
-                    </span>
+                    {k.status === 'active' ? (
+                      <span className="inline-flex items-center gap-1.5 text-emerald-400 text-[11px]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
+                        Active
+                      </span>
+                    ) : (
+                      <span className="inline-flex items-center gap-1.5 text-slate-500 text-[11px]">
+                        <span className="w-1.5 h-1.5 rounded-full bg-slate-500" />
+                        Revoked
+                      </span>
+                    )}
                   </td>
-                  <td className="py-3.5">
-                    <span className="inline-flex items-center gap-1.5 text-emerald-400 text-[11px]">
-                      <span className="w-1.5 h-1.5 rounded-full bg-emerald-400" />
-                      Active
-                    </span>
-                  </td>
-                  <td className="py-3.5 text-slate-400">{m.lastActive}</td>
                   <td className="py-3.5 text-right">
-                    <button className="text-[11px] text-slate-400 hover:text-white transition-colors">
-                      Edit Role
-                    </button>
+                    {k.status === 'active' && (
+                      <button
+                        onClick={() => handleRevokeKey(k.id)}
+                        className="text-[11px] text-rose-400 hover:text-rose-300 transition-colors"
+                      >
+                        Revoke
+                      </button>
+                    )}
                   </td>
                 </tr>
               ))}
@@ -398,13 +423,13 @@ export default function AdminPage() {
 
       {/* ISSUE KEY MODAL */}
       {showKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm animate-in fade-in">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
           <div
             className="w-full max-w-md rounded-2xl border p-6 shadow-2xl space-y-4"
             style={{
               backgroundColor: currentTheme.surface,
               borderColor: currentTheme.surfaceBorder,
-              boxShadow: `0 25px 50px -12px rgba(0,0,0,0.9), 0 0 30px -5px ${currentTheme.glow}`,
+              boxShadow: `0 25px 50px -12px rgba(0,0,0,0.95), 0 0 30px -5px ${currentTheme.glow}`,
             }}
           >
             <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: currentTheme.surfaceBorder }}>
@@ -467,4 +492,3 @@ export default function AdminPage() {
     </div>
   );
 }
-

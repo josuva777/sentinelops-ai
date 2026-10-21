@@ -54,3 +54,4 @@ The mobile application is pre-configured with native Android source code:
 - **Build APK**: Run `.\mobile\build_apk.bat` locally.
 - **Output**: The compiled `.apk` is automatically moved to `releases/` and `web/public/downloads/sentinelops-mobile.apk`.
 - **Distribution**: Users can download the APK directly from the website or open `mobile/android` in Android Studio to run on physical devices or emulators.
+

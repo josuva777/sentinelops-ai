@@ -197,6 +197,17 @@ export default function HomePage() {
                 <Play className="h-4 w-4" style={{ color: currentTheme.primary }} />
                 <span>Watch Product Demo</span>
               </a>
+              <a
+                href="/downloads/sentinelops-mobile.apk"
+                download
+                className="flex items-center gap-2 rounded-xl border px-5 py-3.5 text-sm font-semibold text-slate-300 transition-all hover:bg-white/5"
+                style={{
+                  borderColor: currentTheme.surfaceBorder,
+                }}
+              >
+                <Download className="h-4 w-4 text-emerald-400" />
+                <span>Download Android APK</span>
+              </a>
             </motion.div>
 
             {/* Verifiable metrics row */}

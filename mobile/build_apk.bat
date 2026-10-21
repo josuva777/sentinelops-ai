@@ -15,3 +15,4 @@ if %ERRORLEVEL% NEQ 0 (
 echo.
 echo ✅ Build complete. APK stored in releases/ and web/public/downloads/.
 pause
+

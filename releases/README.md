@@ -27,3 +27,4 @@ The script automatically:
 ## 📂 Release Assets
 - `LATEST_RELEASE.json`: Checksum manifest, version tags, and build metadata.
 - `sentinelops-agent-security-v1.0.0-debug.apk`: Standalone debug APK for side-loading or Android Studio emulator testing.
+

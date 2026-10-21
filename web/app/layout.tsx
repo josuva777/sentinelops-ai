@@ -2,6 +2,7 @@ import React from 'react';
 import './globals.css';
 import { ThemeProvider } from '../lib/themeContext';
 import { OperationsProvider } from '../lib/operationsContext';
+import { AuthProvider } from '../lib/authContext';
 
 export const metadata = {
   title: 'SentinelOps AI — Deterministic In-Line Guardrails for AI Agents',
@@ -17,9 +18,11 @@ export default function RootLayout({
     <html lang="en" className="dark">
       <body className="antialiased min-h-screen">
         <ThemeProvider>
-          <OperationsProvider>
-            {children}
-          </OperationsProvider>
+          <AuthProvider>
+            <OperationsProvider>
+              {children}
+            </OperationsProvider>
+          </AuthProvider>
         </ThemeProvider>
       </body>
     </html>
