@@ -129,7 +129,7 @@ export default function HomePage() {
               }}
             >
               <span className="h-2 w-2 rounded-full animate-ping" style={{ backgroundColor: currentTheme.primary }} />
-              <span className="font-semibold">OWASP Agentic Security (2026) Compliant</span>
+              <span className="font-semibold">OWASP Top 10 for Agentic AI Compliant</span>
             </motion.div>
 
             {/* Headline */}
@@ -139,11 +139,11 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.1 }}
               className="text-4xl sm:text-6xl lg:text-7xl font-extrabold tracking-tight text-white max-w-5xl mx-auto leading-tight"
             >
-              Deterministic In-Line Guardrails for <br />
+              Stop Rogue AI Agents. <br />
               <span className="text-transparent bg-clip-text bg-gradient-to-r" style={{
                 backgroundImage: `linear-gradient(to right, ${currentTheme.primary}, ${currentTheme.accent}, #ffffff)`
               }}>
-                Autonomous AI Agents.
+                Deterministic In-Line Guardrails.
               </span>
             </motion.h1>
 
@@ -154,9 +154,8 @@ export default function HomePage() {
               transition={{ duration: 0.5, delay: 0.2 }}
               className="mt-6 text-base sm:text-lg text-slate-300 max-w-3xl mx-auto leading-relaxed"
             >
-              Autonomous agents execute tool calls against databases, private APIs, and financial rails. 
-              SentinelOps AI intercepts tool calls <strong className="text-white">pre-flight</strong> before execution, 
-              enforces mathematical policy rules, and binds high-risk operations to cryptographic human sign-offs.
+              Intercept tool calls <strong className="text-white">pre-flight</strong> before execution. 
+              Zero LLM hallucinations. Mathematical policy enforcement. Cryptographic 15-minute human approval for high-risk actions.
             </motion.p>
 
             {/* CTAs */}
@@ -227,6 +226,132 @@ export default function HomePage() {
           </div>
         </section>
 
+        {/* ABOUT US & MISSION SECTION */}
+        <section id="about" className="py-24 border-b relative" style={{ borderColor: currentTheme.surfaceBorder, backgroundColor: `${currentTheme.surface}40` }}>
+          <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
+            <div className="text-center max-w-3xl mx-auto mb-16">
+              <span className="text-xs font-mono font-bold tracking-wider uppercase px-3 py-1 rounded-full border" style={{
+                backgroundColor: currentTheme.badgeBg,
+                borderColor: currentTheme.surfaceBorder,
+                color: currentTheme.badgeText,
+              }}>
+                About SentinelOps AI
+              </span>
+              <h2 className="text-3xl sm:text-5xl font-extrabold text-white mt-4 tracking-tight">
+                Built for the Autonomous Agent Era
+              </h2>
+              <p className="text-sm sm:text-base text-slate-300 mt-4 leading-relaxed">
+                Chatbots output text. Autonomous agents output SQL queries, payment wires, AWS commands, and API payloads. 
+                When prompt injection or tool hallucination strikes, firewalls are blind. 
+                SentinelOps AI sits in-line between the agent and infrastructure to enforce mathematical policy guardrails.
+              </p>
+            </div>
+
+            {/* 4 Core Pillars: What You Can Do */}
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div
+                className="p-6 rounded-2xl border shadow-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1"
+                style={{
+                  backgroundColor: currentTheme.surface,
+                  borderColor: currentTheme.surfaceBorder,
+                }}
+              >
+                <div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center border mb-4" style={{
+                    backgroundColor: currentTheme.badgeBg,
+                    borderColor: currentTheme.surfaceBorder,
+                    color: currentTheme.primary,
+                  }}>
+                    <Zap className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-white">Pre-Flight Interception</h3>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                    Tool parameters are trapped in &lt;12ms before sockets or database connections open. No rogue side-effects escape.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t text-[11px] font-mono text-emerald-400" style={{ borderColor: currentTheme.surfaceBorder }}>
+                  ✓ 100% Fail-Closed Gateway
+                </div>
+              </div>
+
+              <div
+                className="p-6 rounded-2xl border shadow-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1"
+                style={{
+                  backgroundColor: currentTheme.surface,
+                  borderColor: currentTheme.surfaceBorder,
+                }}
+              >
+                <div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center border mb-4" style={{
+                    backgroundColor: currentTheme.badgeBg,
+                    borderColor: currentTheme.surfaceBorder,
+                    color: currentTheme.primary,
+                  }}>
+                    <Shield className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-white">Deterministic Rules</h3>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                    Zero LLM-evaluating-LLM hallucinations. Pure mathematical AST syntax trees and regex parameter boundaries.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t text-[11px] font-mono text-emerald-400" style={{ borderColor: currentTheme.surfaceBorder }}>
+                  ✓ ALLOW &bull; DENY &bull; APPROVE
+                </div>
+              </div>
+
+              <div
+                className="p-6 rounded-2xl border shadow-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1"
+                style={{
+                  backgroundColor: currentTheme.surface,
+                  borderColor: currentTheme.surfaceBorder,
+                }}
+              >
+                <div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center border mb-4" style={{
+                    backgroundColor: currentTheme.badgeBg,
+                    borderColor: currentTheme.surfaceBorder,
+                    color: currentTheme.primary,
+                  }}>
+                    <Clock className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-white">Human-in-the-Loop</h3>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                    High-value mutations pause for human authorization with 15-minute single-use cryptographic tokens.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t text-[11px] font-mono text-amber-400" style={{ borderColor: currentTheme.surfaceBorder }}>
+                  ✓ 1-Tap Mobile & Console Sign-off
+                </div>
+              </div>
+
+              <div
+                className="p-6 rounded-2xl border shadow-xl flex flex-col justify-between transition-all duration-300 hover:-translate-y-1"
+                style={{
+                  backgroundColor: currentTheme.surface,
+                  borderColor: currentTheme.surfaceBorder,
+                }}
+              >
+                <div>
+                  <div className="w-10 h-10 rounded-xl flex items-center justify-center border mb-4" style={{
+                    backgroundColor: currentTheme.badgeBg,
+                    borderColor: currentTheme.surfaceBorder,
+                    color: currentTheme.primary,
+                  }}>
+                    <Fingerprint className="w-5 h-5" />
+                  </div>
+                  <h3 className="text-base font-bold text-white">SHA-256 Audit Seal</h3>
+                  <p className="text-xs text-slate-400 mt-2 leading-relaxed">
+                    Every intercepted event is mathematically sealed into an immutable append-only hash chain from Genesis block.
+                  </p>
+                </div>
+                <div className="mt-4 pt-3 border-t text-[11px] font-mono text-emerald-400" style={{ borderColor: currentTheme.surfaceBorder }}>
+                  ✓ Tamper-Evident Proofs
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
         {/* BROADCAST COMMERCIAL VIDEO SHOWCASE SECTION */}
         <section id="commercial-video" className="py-20 border-b relative" style={{ borderColor: currentTheme.surfaceBorder, backgroundColor: `${currentTheme.surface}60` }}>
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8">
@@ -250,7 +375,7 @@ export default function HomePage() {
                 style={{ borderColor: currentTheme.surfaceBorder, color: currentTheme.accent }}
               >
                 <Download className="w-4 h-4" />
-                <span>Download MP4 Video (886 KB)</span>
+                <span>Download Full HD MP4 Video</span>
               </a>
             </div>
 

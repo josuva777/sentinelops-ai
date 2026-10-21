@@ -3,9 +3,11 @@
 import React, { useState } from 'react';
 import { INITIAL_AUDIT_EVENTS } from '../../../lib/dataStore';
 import { AuditEvent } from '../../../lib/types';
-import { Activity, Shield, CheckCircle2, Search, Download, Check, Key, Hash } from 'lucide-react';
+import { useTheme } from '../../../lib/themeContext';
+import { Activity, Shield, CheckCircle2, Search, Download, Check, Hash } from 'lucide-react';
 
 export default function ActivityTimelinePage() {
+  const { currentTheme } = useTheme();
   const [events, setEvents] = useState<AuditEvent[]>(INITIAL_AUDIT_EVENTS);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedEvent, setSelectedEvent] = useState<AuditEvent | null>(null);
@@ -38,7 +40,7 @@ export default function ActivityTimelinePage() {
   return (
     <div className="space-y-6 max-w-7xl mx-auto">
       {/* Page Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 pb-4 border-b" style={{ borderColor: currentTheme.surfaceBorder }}>
         <div>
           <h1 className="text-2xl font-bold text-white tracking-tight">Activity & Tamper-Evident Ledger</h1>
           <p className="text-xs text-slate-400 mt-1">
@@ -49,14 +51,23 @@ export default function ActivityTimelinePage() {
         <div className="flex items-center gap-3">
           <button
             onClick={handleVerifyLedger}
-            className="flex items-center gap-2 rounded-lg border border-brand-cyan/40 bg-brand-cyan/10 px-3.5 py-2 text-xs font-semibold text-brand-cyan hover:bg-brand-cyan/20 transition-colors"
+            className="flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-semibold transition-all hover:opacity-90 shadow-md"
+            style={{
+              backgroundColor: currentTheme.badgeBg,
+              borderColor: currentTheme.surfaceBorder,
+              color: currentTheme.badgeText,
+            }}
           >
-            <Shield className="h-4 w-4" />
+            <Shield className="h-4 w-4" style={{ color: currentTheme.primary }} />
             <span>Verify Ledger Integrity</span>
           </button>
           <button
             onClick={handleExportJSON}
-            className="flex items-center gap-2 rounded-lg bg-surface border border-surface-border px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white hover:border-slate-500 transition-colors"
+            className="flex items-center gap-2 rounded-xl border px-3.5 py-2 text-xs font-semibold text-slate-300 hover:text-white transition-colors"
+            style={{
+              borderColor: currentTheme.surfaceBorder,
+              backgroundColor: currentTheme.surface,
+            }}
           >
             <Download className="h-4 w-4" />
             <span>Export Proof (JSON)</span>
@@ -66,14 +77,20 @@ export default function ActivityTimelinePage() {
 
       {/* Verification status toast */}
       {ledgerVerificationStatus && (
-        <div className="p-3.5 rounded-xl border border-status-success/40 bg-status-success/10 text-status-success text-xs font-mono flex items-center gap-2">
+        <div className="p-3.5 rounded-xl border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 text-xs font-mono flex items-center gap-2 shadow-lg">
           <CheckCircle2 className="h-4 w-4 shrink-0" />
           <span>{ledgerVerificationStatus}</span>
         </div>
       )}
 
       {/* Search Input */}
-      <div className="flex items-center gap-4 rounded-xl border border-surface-border bg-surface p-3">
+      <div
+        className="flex items-center gap-4 rounded-xl border p-3"
+        style={{
+          backgroundColor: currentTheme.surface,
+          borderColor: currentTheme.surfaceBorder,
+        }}
+      >
         <Search className="h-4 w-4 text-slate-400 shrink-0 ml-2" />
         <input
           type="text"
@@ -85,11 +102,17 @@ export default function ActivityTimelinePage() {
       </div>
 
       {/* Audit Table */}
-      <div className="rounded-xl border border-surface-border bg-surface overflow-hidden">
+      <div
+        className="rounded-2xl border overflow-hidden shadow-xl"
+        style={{
+          backgroundColor: currentTheme.surface,
+          borderColor: currentTheme.surfaceBorder,
+        }}
+      >
         <div className="overflow-x-auto">
           <table className="w-full text-left text-xs font-mono">
             <thead>
-              <tr className="border-b border-surface-border bg-surface-subtle text-slate-400">
+              <tr className="border-b text-slate-400" style={{ borderColor: currentTheme.surfaceBorder, backgroundColor: 'rgba(0,0,0,0.3)' }}>
                 <th className="py-3 px-4">Timestamp (UTC)</th>
                 <th className="py-3 px-4">Decision</th>
                 <th className="py-3 px-4">Agent Identity</th>
@@ -98,27 +121,27 @@ export default function ActivityTimelinePage() {
                 <th className="py-3 px-4">SHA-256 Proof</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-surface-border text-slate-300">
+            <tbody className="divide-y text-slate-300" style={{ borderColor: currentTheme.surfaceBorder }}>
               {filtered.map((evt) => (
                 <tr
                   key={evt.id}
                   onClick={() => setSelectedEvent(evt)}
-                  className="hover:bg-surface-subtle transition-colors cursor-pointer"
+                  className="hover:bg-white/[0.03] transition-colors cursor-pointer"
                 >
                   <td className="py-3 px-4 text-slate-400 text-[11px] whitespace-nowrap">{evt.timestamp}</td>
                   <td className="py-3 px-4 whitespace-nowrap">
-                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold ${
+                    <span className={`px-2 py-0.5 rounded text-[10px] font-bold border ${
                       evt.decision === 'ALLOW'
-                        ? 'bg-status-success/20 text-status-success'
+                        ? 'bg-emerald-500/20 text-emerald-400 border-emerald-500/40'
                         : evt.decision === 'DENY'
-                        ? 'bg-status-critical/20 text-status-critical'
-                        : 'bg-status-warning/20 text-status-warning'
+                        ? 'bg-rose-500/20 text-rose-400 border-rose-500/40'
+                        : 'bg-amber-500/20 text-amber-400 border-amber-500/40'
                     }`}>
                       {evt.decision}
                     </span>
                   </td>
                   <td className="py-3 px-4 text-white font-medium">{evt.agentName}</td>
-                  <td className="py-3 px-4 text-brand-cyan">{evt.toolName}()</td>
+                  <td className="py-3 px-4" style={{ color: currentTheme.accent }}>{evt.toolName}()</td>
                   <td className="py-3 px-4 text-slate-300 max-w-xs truncate">{evt.payloadSummary}</td>
                   <td className="py-3 px-4 text-[10px] text-slate-500 font-mono">
                     hash:{evt.eventHash.slice(0, 10)}...
@@ -132,10 +155,17 @@ export default function ActivityTimelinePage() {
 
       {/* Cryptographic Event Inspector Drawer */}
       {selectedEvent && (
-        <div className="rounded-xl border border-brand-cyan/40 bg-surface p-6 space-y-4">
-          <div className="flex items-center justify-between border-b border-surface-border pb-3">
+        <div
+          className="rounded-2xl border p-6 space-y-4 shadow-2xl"
+          style={{
+            backgroundColor: currentTheme.surface,
+            borderColor: currentTheme.surfaceBorder,
+            boxShadow: `0 0 30px -8px ${currentTheme.glow}`,
+          }}
+        >
+          <div className="flex items-center justify-between border-b pb-3" style={{ borderColor: currentTheme.surfaceBorder }}>
             <div className="flex items-center gap-2">
-              <Hash className="h-4 w-4 text-brand-cyan" />
+              <Hash className="h-4 w-4" style={{ color: currentTheme.primary }} />
               <span className="text-xs font-bold text-white uppercase tracking-wider">
                 Cryptographic Block Inspection: {selectedEvent.id}
               </span>
@@ -144,28 +174,40 @@ export default function ActivityTimelinePage() {
               onClick={() => setSelectedEvent(null)}
               className="text-xs text-slate-400 hover:text-white"
             >
-              Close Inspector
+              ✕ Close
             </button>
           </div>
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 font-mono text-xs">
-            <div className="p-3 rounded bg-surface-subtle border border-surface-border space-y-1">
-              <div className="text-[10px] text-slate-400">Current Event SHA-256 Hash</div>
-              <div className="text-brand-cyan break-all text-[11px]">{selectedEvent.eventHash}</div>
+            <div
+              className="p-3.5 rounded-xl border space-y-1"
+              style={{
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                borderColor: currentTheme.surfaceBorder,
+              }}
+            >
+              <div className="text-[10px] text-slate-400 font-sans">Current Event SHA-256 Hash</div>
+              <div className="break-all text-[11px]" style={{ color: currentTheme.accent }}>{selectedEvent.eventHash}</div>
             </div>
 
-            <div className="p-3 rounded bg-surface-subtle border border-surface-border space-y-1">
-              <div className="text-[10px] text-slate-400">Previous Block Hash (Parent Link)</div>
+            <div
+              className="p-3.5 rounded-xl border space-y-1"
+              style={{
+                backgroundColor: 'rgba(0,0,0,0.3)',
+                borderColor: currentTheme.surfaceBorder,
+              }}
+            >
+              <div className="text-[10px] text-slate-400 font-sans">Previous Block Hash (Parent Link)</div>
               <div className="text-slate-300 break-all text-[11px]">{selectedEvent.prevHash}</div>
             </div>
           </div>
 
-          <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-400 pt-2 border-t border-surface-border">
+          <div className="flex flex-wrap items-center justify-between gap-4 text-xs font-mono text-slate-400 pt-2 border-t" style={{ borderColor: currentTheme.surfaceBorder }}>
             <span>Correlation Trace: <strong className="text-white">{selectedEvent.traceId}</strong></span>
-            <span>Reason Code: <strong className="text-brand-cyan">{selectedEvent.reasonCode}</strong></span>
-            <span className="text-status-success flex items-center gap-1">
+            <span>Reason Code: <strong style={{ color: currentTheme.accent }}>{selectedEvent.reasonCode}</strong></span>
+            <span className="text-emerald-400 flex items-center gap-1 font-semibold">
               <Check className="h-3.5 w-3.5" />
-              Signature Valid
+              Cryptographic Signature Valid
             </span>
           </div>
         </div>

@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState } from 'react';
+import { useTheme } from '../../../lib/themeContext';
 import { Sparkles, Send, Shield, AlertTriangle, Terminal, Bot } from 'lucide-react';
 
 interface ChatMessage {
@@ -12,6 +13,7 @@ interface ChatMessage {
 }
 
 export default function AIAssistantPage() {
+  const { currentTheme } = useTheme();
   const [messages, setMessages] = useState<ChatMessage[]>([
     {
       id: '1',
@@ -89,19 +91,26 @@ export default function AIAssistantPage() {
   return (
     <div className="space-y-6 max-w-4xl mx-auto flex flex-col h-[calc(100vh-140px)]">
       {/* Header */}
-      <div className="flex items-center justify-between border-b border-surface-border pb-4">
+      <div className="flex items-center justify-between border-b pb-4" style={{ borderColor: currentTheme.surfaceBorder }}>
         <div>
           <div className="flex items-center gap-2">
-            <Sparkles className="h-5 w-5 text-brand-cyan" />
+            <Sparkles className="h-5 w-5" style={{ color: currentTheme.primary }} />
             <h1 className="text-xl font-bold text-white tracking-tight">AI Security Assistant</h1>
           </div>
           <p className="text-xs text-slate-400 mt-0.5">
-            Bounded, context-restricted assistant. Operates strictly on verified event telemetry.
+            Bounded, context-restricted copilot. Operates strictly on verified event telemetry and OWASP benchmarks.
           </p>
         </div>
 
-        <div className="flex items-center gap-2 text-xs font-mono text-slate-400 bg-surface px-3 py-1 rounded-lg border border-surface-border">
-          <Shield className="h-3.5 w-3.5 text-brand-cyan" />
+        <div
+          className="flex items-center gap-2 text-xs font-mono px-3 py-1.5 rounded-xl border"
+          style={{
+            backgroundColor: currentTheme.surface,
+            borderColor: currentTheme.surfaceBorder,
+            color: currentTheme.accent,
+          }}
+        >
+          <Shield className="h-3.5 w-3.5" style={{ color: currentTheme.primary }} />
           <span>Prompt Injection Guard: Active</span>
         </div>
       </div>
@@ -116,24 +125,43 @@ export default function AIAssistantPage() {
             }`}
           >
             {msg.sender === 'assistant' && (
-              <div className="h-7 w-7 rounded-lg bg-brand-cyan/20 border border-brand-cyan/40 flex items-center justify-center shrink-0 mt-0.5">
-                <Sparkles className="h-3.5 w-3.5 text-brand-cyan" />
+              <div
+                className="h-8 w-8 rounded-xl flex items-center justify-center shrink-0 mt-0.5 border"
+                style={{
+                  backgroundColor: currentTheme.badgeBg,
+                  borderColor: currentTheme.surfaceBorder,
+                  color: currentTheme.primary,
+                }}
+              >
+                <Sparkles className="h-4 w-4" />
               </div>
             )}
 
             <div
-              className={`p-4 rounded-xl max-w-2xl space-y-2.5 ${
+              className={`p-4 rounded-2xl max-w-2xl space-y-2.5 shadow-lg ${
                 msg.sender === 'user'
-                  ? 'bg-brand-cyan text-slate-950 font-medium'
-                  : 'bg-surface border border-surface-border text-slate-200'
+                  ? 'font-medium text-slate-950 font-sans'
+                  : 'text-slate-200 border'
               }`}
+              style={{
+                backgroundColor: msg.sender === 'user' ? currentTheme.primary : currentTheme.surface,
+                borderColor: msg.sender === 'user' ? currentTheme.primary : currentTheme.surfaceBorder,
+              }}
             >
               <div className="whitespace-pre-wrap">{msg.text}</div>
 
               {msg.evidenceLinks && msg.evidenceLinks.length > 0 && (
-                <div className="pt-2 border-t border-surface-border/60 flex flex-wrap gap-1.5 font-mono text-[10px] text-brand-cyan">
+                <div className="pt-2 border-t flex flex-wrap gap-1.5 font-mono text-[10px]" style={{ borderColor: currentTheme.surfaceBorder }}>
                   {msg.evidenceLinks.map((link) => (
-                    <span key={link} className="px-2 py-0.5 rounded bg-surface-subtle border border-surface-border">
+                    <span
+                      key={link}
+                      className="px-2 py-0.5 rounded border"
+                      style={{
+                        backgroundColor: currentTheme.badgeBg,
+                        borderColor: currentTheme.surfaceBorder,
+                        color: currentTheme.accent,
+                      }}
+                    >
                       {link}
                     </span>
                   ))}
@@ -145,7 +173,7 @@ export default function AIAssistantPage() {
 
         {isAnalyzing && (
           <div className="flex items-center gap-2 text-xs font-mono text-slate-400 p-3">
-            <div className="h-2 w-2 rounded-full bg-brand-cyan animate-ping" />
+            <div className="h-2 w-2 rounded-full animate-ping" style={{ backgroundColor: currentTheme.primary }} />
             <span>Consulting verified telemetry ledger...</span>
           </div>
         )}
@@ -153,25 +181,28 @@ export default function AIAssistantPage() {
 
       {/* Chat Input Bar */}
       <form onSubmit={handleSend} className="pt-2">
-        <div className="flex items-center gap-2 rounded-xl border border-surface-border bg-surface p-2">
+        <div
+          className="flex items-center gap-2 rounded-2xl border p-2 shadow-xl"
+          style={{
+            backgroundColor: currentTheme.surface,
+            borderColor: currentTheme.surfaceBorder,
+          }}
+        >
           <input
             type="text"
             value={inputText}
             onChange={(e) => setInputText(e.target.value)}
             placeholder="Ask about a blocked event, policy rule, or request an incident summary..."
-            className="flex-1 bg-transparent px-3 py-1.5 text-xs text-white placeholder-slate-500 focus:outline-none"
+            className="flex-1 bg-transparent px-3 py-2 text-xs text-white placeholder-slate-500 focus:outline-none"
           />
           <button
             type="submit"
             disabled={!inputText.trim() || isAnalyzing}
-            className="p-2 rounded-lg bg-brand-cyan text-slate-950 hover:bg-cyan-400 transition-colors disabled:opacity-40"
+            className="p-2.5 rounded-xl text-slate-950 transition-all hover:opacity-90 disabled:opacity-40 shadow-md"
+            style={{ backgroundColor: currentTheme.primary }}
           >
             <Send className="h-4 w-4" />
           </button>
-        </div>
-        <div className="flex items-center justify-between text-[10px] text-slate-500 mt-2 font-mono">
-          <span>Trained strictly on deterministic audit schemas. Zero shell access.</span>
-          <span>Latency &lt; 200ms</span>
         </div>
       </form>
     </div>

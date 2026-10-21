@@ -64,6 +64,7 @@ export function UserGuidance() {
   const { currentTheme } = useTheme();
   const [completedSteps, setCompletedSteps] = useState<string[]>([]);
   const [isExpanded, setIsExpanded] = useState<boolean>(true);
+  const [isDismissed, setIsDismissed] = useState<boolean>(false);
 
   useEffect(() => {
     try {
@@ -74,6 +75,10 @@ export function UserGuidance() {
       const savedExpanded = localStorage.getItem('sentinelops_guidance_expanded');
       if (savedExpanded !== null) {
         setIsExpanded(JSON.parse(savedExpanded));
+      }
+      const savedDismissed = localStorage.getItem('sentinelops_guidance_dismissed');
+      if (savedDismissed !== null) {
+        setIsDismissed(JSON.parse(savedDismissed));
       }
     } catch (e) {
       // Ignore
@@ -97,7 +102,37 @@ export function UserGuidance() {
     localStorage.setItem('sentinelops_guidance_expanded', JSON.stringify(next));
   };
 
+  const handleDismiss = () => {
+    setIsDismissed(true);
+    localStorage.setItem('sentinelops_guidance_dismissed', JSON.stringify(true));
+  };
+
+  const handleRestore = () => {
+    setIsDismissed(false);
+    setIsExpanded(true);
+    localStorage.setItem('sentinelops_guidance_dismissed', JSON.stringify(false));
+  };
+
   const progressPercent = Math.round((completedSteps.length / GUIDE_STEPS.length) * 100);
+
+  if (isDismissed) {
+    return (
+      <div className="mb-6 flex justify-end">
+        <button
+          onClick={handleRestore}
+          className="flex items-center gap-2 px-3 py-1.5 rounded-xl border text-xs font-mono transition-all hover:opacity-90"
+          style={{
+            backgroundColor: currentTheme.badgeBg,
+            borderColor: currentTheme.surfaceBorder,
+            color: currentTheme.badgeText,
+          }}
+        >
+          <Sparkles className="w-3.5 h-3.5" style={{ color: currentTheme.primary }} />
+          <span>Quickstart Tour ({progressPercent}%)</span>
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div
@@ -160,6 +195,14 @@ export function UserGuidance() {
             title={isExpanded ? 'Collapse Guidance' : 'Expand Guidance'}
           >
             {isExpanded ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+          </button>
+          <button
+            onClick={handleDismiss}
+            className="p-1.5 rounded-lg border text-slate-400 hover:text-rose-400 transition-colors"
+            style={{ borderColor: currentTheme.surfaceBorder }}
+            title="Dismiss Tour"
+          >
+            <span className="text-xs font-mono font-bold">✕</span>
           </button>
         </div>
       </div>

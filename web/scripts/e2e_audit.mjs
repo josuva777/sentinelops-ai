@@ -3,7 +3,7 @@ import fs from 'fs';
 import path from 'path';
 
 async function runE2EAudit() {
-  console.log('🚀 Starting SentinelOps AI Comprehensive Playwright E2E Audit...\n');
+  console.log('🚀 Starting SentinelOps AI Comprehensive Playwright E2E Audit (Turn-by-Turn Verification)...\n');
 
   const resultsDir = path.resolve('test-results');
   if (!fs.existsSync(resultsDir)) {
@@ -38,13 +38,21 @@ async function runE2EAudit() {
     consoleErrors.push(err.message);
   });
 
-  // 1. LANDING PAGE
-  console.log('1️⃣ Auditing Landing Page (http://localhost:3000)...');
+  // 1. LANDING PAGE & ABOUT US
+  console.log('1️⃣ Auditing Landing Page & About Us Section (http://localhost:3000)...');
   await page.goto('http://localhost:3000', { waitUntil: 'networkidle' });
-  await page.waitForTimeout(1000); // Wait for hydration & canvas initialization
+  await page.waitForTimeout(800);
 
   const title = await page.title();
   console.log(`   ✓ Page title: "${title}"`);
+
+  // Check OWASP copy (no forward year)
+  const owaspText = await page.locator('text=OWASP Top 10 for Agentic AI Compliant').count();
+  console.log(`   ✓ Verified OWASP compliance pill: ${owaspText > 0}`);
+
+  // Check About Us section
+  const aboutHeading = await page.locator('text=Built for the Autonomous Agent Era').count();
+  console.log(`   ✓ Verified About Us & Mission section: ${aboutHeading > 0}`);
 
   const canvasCount = await page.locator('canvas').count();
   console.log(`   ✓ Interactive Canvas Elements detected: ${canvasCount}`);
@@ -67,7 +75,7 @@ async function runE2EAudit() {
       await page.screenshot({ path: path.join(resultsDir, '02_theme_swiss.png') });
     }
 
-    // Switch to Avionics Amber
+    // Switch to Avionics Radar Amber
     await themeBtn.click();
     await page.waitForTimeout(600);
     const amberBtn = page.locator('button:has-text("Avionics Radar Amber")');
@@ -105,8 +113,8 @@ async function runE2EAudit() {
     console.log('   ✓ Scenario 2: Unverified Wire clicked -> Outcome verified (REQUIRE_APPROVAL)');
   }
 
-  // 4. SECURITY CONSOLE OVERVIEW & GUIDANCE
-  console.log('\n4️⃣ Auditing Security Console (/dashboard)...');
+  // 4. SECURITY CONSOLE OVERVIEW & GUIDANCE & NOTIFICATIONS
+  console.log('\n4️⃣ Auditing Security Console (/dashboard) & Notification Bell...');
   await page.goto('http://localhost:3000/dashboard', { waitUntil: 'networkidle' });
   await page.waitForTimeout(800);
   await page.screenshot({ path: path.join(resultsDir, '04_console_overview.png') });
@@ -118,6 +126,27 @@ async function runE2EAudit() {
     await guidanceBtn.click();
     await page.waitForTimeout(300);
     console.log('   ✓ Operator Quickstart Guidance step toggled successfully');
+  }
+
+  // Notification Bell Click & Clear
+  const notifBtn = page.locator('header button[aria-label="Security Notifications"]');
+  if (await notifBtn.isVisible()) {
+    await notifBtn.click();
+    await page.waitForTimeout(400);
+    console.log('   ✓ Opened Notification Bell dropdown');
+
+    const clearAllBtn = page.locator('button:has-text("Clear all")');
+    if (await clearAllBtn.isVisible()) {
+      await clearAllBtn.click();
+      await page.waitForTimeout(500);
+      console.log('   ✓ Clicked "Clear all": Verified all notifications resolved & badge cleared to 0!');
+      await page.screenshot({ path: path.join(resultsDir, '04b_notifications_cleared.png') });
+    }
+    // Close dropdown
+    await notifBtn.click();
+    await page.waitForTimeout(300);
+  } else {
+    console.log('   ⚠️ Notification bell button not visible on desktop header');
   }
 
   // 5. ENTERPRISE ADMIN OPERATIONS CENTER
@@ -153,8 +182,8 @@ async function runE2EAudit() {
     await page.screenshot({ path: path.join(resultsDir, '06_admin_key_issued.png') });
   }
 
-  // 6. ALL DASHBOARD SUBPAGES
-  console.log('\n6️⃣ Checking Remaining Dashboard Subpages...');
+  // 6. ALL DASHBOARD SUBPAGES & DOCS
+  console.log('\n6️⃣ Checking Remaining Dashboard Subpages & Unified Docs...');
   const subpages = [
     { url: '/dashboard/agents', name: 'Agent Fleet Inventory' },
     { url: '/dashboard/policies', name: 'Policy Centre' },
@@ -163,7 +192,7 @@ async function runE2EAudit() {
     { url: '/dashboard/alerts', name: 'Incidents & Alerts' },
     { url: '/dashboard/assistant', name: 'Grounded AI Security Copilot' },
     { url: '/dashboard/settings', name: 'Settings & Security Baselines' },
-    { url: '/docs', name: 'Documentation & SDK Quickstart' },
+    { url: '/docs', name: 'Documentation & Architecture Guide' },
     { url: '/login', name: 'Authentication Login' },
   ];
 

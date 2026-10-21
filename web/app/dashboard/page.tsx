@@ -17,16 +17,16 @@ import {
 } from 'lucide-react';
 import {
   INITIAL_AGENTS,
-  INITIAL_APPROVALS,
-  INITIAL_ALERTS,
   INITIAL_AUDIT_EVENTS,
 } from '../../lib/dataStore';
 import { useTheme } from '../../lib/themeContext';
+import { useOperations } from '../../lib/operationsContext';
 
 export default function DashboardOverviewPage() {
   const { currentTheme } = useTheme();
-  const pendingApprovals = INITIAL_APPROVALS.filter((a) => a.status === 'PENDING');
-  const criticalAlerts = INITIAL_ALERTS.filter((a) => a.severity === 'critical');
+  const { approvals, alerts } = useOperations();
+  const pendingApprovals = approvals.filter((a) => a.status === 'PENDING');
+  const criticalAlerts = alerts.filter((a) => a.severity === 'critical' && a.status !== 'RESOLVED');
 
   return (
     <div className="space-y-8 max-w-7xl mx-auto">
@@ -164,7 +164,12 @@ export default function DashboardOverviewPage() {
             </div>
 
             <div className="divide-y" style={{ borderColor: currentTheme.surfaceBorder }}>
-              {INITIAL_ALERTS.map((alert) => (
+              {alerts.filter(a => a.status !== 'RESOLVED').length === 0 ? (
+                <div className="p-8 text-center text-xs font-mono text-emerald-400">
+                  ✓ All security alerts resolved. Zero active incidents.
+                </div>
+              ) : (
+                alerts.filter(a => a.status !== 'RESOLVED').map((alert) => (
                 <div key={alert.id} className="p-4 hover:bg-white/[0.02] transition-colors flex items-start justify-between gap-4">
                   <div className="space-y-1">
                     <div className="flex items-center gap-2">
@@ -195,7 +200,7 @@ export default function DashboardOverviewPage() {
                     Investigate
                   </Link>
                 </div>
-              ))}
+              )))}
             </div>
           </div>
 

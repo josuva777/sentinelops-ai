@@ -17,7 +17,7 @@ export default function MobileOverviewScreen() {
       <View style={styles.header}>
         <View style={styles.brandRow}>
           <View style={styles.brandIcon}>
-            <Shield size={20} color="#06b6d4" />
+            <Shield size={20} color="#10b981" />
           </View>
           <View>
             <View style={styles.titleRow}>
@@ -102,16 +102,16 @@ export default function MobileOverviewScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#080b11' },
+  container: { flex: 1, backgroundColor: '#060a08' },
   content: { padding: 20, paddingTop: 60, paddingBottom: 40 },
   header: { marginBottom: 20 },
   brandRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   brandIcon: {
     width: 38,
     height: 38,
-    borderRadius: 10,
-    backgroundColor: '#0e131f',
-    borderColor: '#1e293b',
+    borderRadius: 12,
+    backgroundColor: '#0d1511',
+    borderColor: '#16281e',
     borderWidth: 1,
     alignItems: 'center',
     justifyContent: 'center',
@@ -119,14 +119,14 @@ const styles = StyleSheet.create({
   titleRow: { flexDirection: 'row', alignItems: 'center', gap: 8 },
   brandTitle: { fontSize: 18, fontWeight: '800', color: '#ffffff' },
   pillBadge: {
-    backgroundColor: 'rgba(6, 182, 212, 0.15)',
-    borderColor: 'rgba(6, 182, 212, 0.4)',
+    backgroundColor: 'rgba(16, 185, 129, 0.15)',
+    borderColor: 'rgba(16, 185, 129, 0.4)',
     borderWidth: 1,
     paddingHorizontal: 6,
     paddingVertical: 2,
     borderRadius: 6,
   },
-  pillText: { color: '#06b6d4', fontSize: 9, fontWeight: '700' },
+  pillText: { color: '#10b981', fontSize: 9, fontWeight: '700' },
   brandSub: { fontSize: 11, color: '#94a3b8', marginTop: 2 },
   statusDotRow: { flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 12 },
   statusDot: { width: 8, height: 8, borderRadius: 4, backgroundColor: '#10b981' },
@@ -148,10 +148,10 @@ const styles = StyleSheet.create({
   grid: { flexDirection: 'row', flexWrap: 'wrap', gap: 12, marginBottom: 24 },
   card: {
     width: '48%',
-    backgroundColor: '#0e131f',
-    borderColor: '#1e293b',
+    backgroundColor: '#0d1511',
+    borderColor: '#16281e',
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 14,
   },
   cardLabel: { fontSize: 11, color: '#94a3b8' },
@@ -160,10 +160,10 @@ const styles = StyleSheet.create({
   section: { marginTop: 8 },
   sectionTitle: { fontSize: 11, fontWeight: '700', color: '#64748b', letterSpacing: 1, marginBottom: 10 },
   agentCard: {
-    backgroundColor: '#0e131f',
-    borderColor: '#1e293b',
+    backgroundColor: '#0d1511',
+    borderColor: '#16281e',
     borderWidth: 1,
-    borderRadius: 12,
+    borderRadius: 14,
     padding: 14,
     marginBottom: 10,
   },
@@ -172,5 +172,5 @@ const styles = StyleSheet.create({
   agentHealthy: { fontSize: 10, fontWeight: '700', color: '#10b981' },
   agentDegraded: { fontSize: 10, fontWeight: '700', color: '#f59e0b' },
   agentDesc: { fontSize: 11, color: '#94a3b8', marginTop: 4 },
-  agentMeta: { fontSize: 10, color: '#06b6d4', marginTop: 6, fontFamily: 'monospace' },
+  agentMeta: { fontSize: 10, color: '#34d399', marginTop: 6, fontFamily: 'monospace' },
 });

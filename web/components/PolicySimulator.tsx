@@ -2,9 +2,11 @@
 
 import React, { useState } from 'react';
 import { simulatePolicyEvaluation } from '../lib/dataStore';
+import { useTheme } from '../lib/themeContext';
 import { Shield, Play, CheckCircle2, XCircle, Clock, Terminal } from 'lucide-react';
 
 export function PolicySimulator() {
+  const { currentTheme } = useTheme();
   const [selectedScenario, setSelectedScenario] = useState<'finance_large' | 'drop_table' | 'safe_query' | 'mass_email'>('finance_large');
   const [customTool, setCustomTool] = useState('initiate_settlement');
   const [customPayload, setCustomPayload] = useState('{\n  "beneficiary": "Acme Global",\n  "amount": 12500,\n  "currency": "USD"\n}');
@@ -46,11 +48,17 @@ export function PolicySimulator() {
   };
 
   return (
-    <div className="w-full rounded-2xl border border-surface-border bg-surface p-6 sm:p-8">
-      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b border-surface-border pb-6 mb-6">
+    <div
+      className="rounded-2xl border p-6 sm:p-8 shadow-2xl transition-all"
+      style={{
+        backgroundColor: currentTheme.surface,
+        borderColor: currentTheme.surfaceBorder,
+      }}
+    >
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 border-b pb-6 mb-6" style={{ borderColor: currentTheme.surfaceBorder }}>
         <div>
           <div className="flex items-center gap-2">
-            <Terminal className="h-5 w-5 text-brand-cyan" />
+            <Terminal className="h-5 w-5" style={{ color: currentTheme.primary }} />
             <h3 className="text-lg font-bold text-white">Live Policy Enforcement Simulator</h3>
           </div>
           <p className="text-xs text-slate-400 mt-1">
@@ -59,34 +67,44 @@ export function PolicySimulator() {
         </div>
 
         {/* Preset quick buttons */}
-        <div className="flex flex-wrap gap-2">
+        <div className="flex flex-wrap gap-2 font-mono text-xs">
           <button
             onClick={() => handleSelectScenario('finance_large')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors border ${
               selectedScenario === 'finance_large'
-                ? 'bg-brand-cyan/20 text-brand-cyan border border-brand-cyan/40'
-                : 'bg-surface-subtle text-slate-400 hover:text-white border border-surface-border'
+                ? 'font-bold text-slate-950 shadow-md'
+                : 'text-slate-400 hover:text-white'
             }`}
+            style={{
+              backgroundColor: selectedScenario === 'finance_large' ? currentTheme.primary : 'transparent',
+              borderColor: selectedScenario === 'finance_large' ? currentTheme.primary : currentTheme.surfaceBorder,
+            }}
           >
             Over-Limit Wire ($12.5k)
           </button>
           <button
             onClick={() => handleSelectScenario('drop_table')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors border ${
               selectedScenario === 'drop_table'
-                ? 'bg-status-critical/20 text-status-critical border border-status-critical/40'
-                : 'bg-surface-subtle text-slate-400 hover:text-white border border-surface-border'
+                ? 'bg-rose-500 text-slate-950 border-rose-400 font-bold'
+                : 'text-slate-400 hover:text-white border-transparent'
             }`}
+            style={{
+              borderColor: selectedScenario === 'drop_table' ? '#f43f5e' : currentTheme.surfaceBorder,
+            }}
           >
             Drop Table Injection
           </button>
           <button
             onClick={() => handleSelectScenario('safe_query')}
-            className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-colors ${
+            className={`px-3 py-1.5 rounded-lg font-medium transition-colors border ${
               selectedScenario === 'safe_query'
-                ? 'bg-status-success/20 text-status-success border border-status-success/40'
-                : 'bg-surface-subtle text-slate-400 hover:text-white border border-surface-border'
+                ? 'bg-emerald-500 text-slate-950 border-emerald-400 font-bold'
+                : 'text-slate-400 hover:text-white border-transparent'
             }`}
+            style={{
+              borderColor: selectedScenario === 'safe_query' ? '#10b981' : currentTheme.surfaceBorder,
+            }}
           >
             Safe Read Query
           </button>
@@ -102,7 +120,8 @@ export function PolicySimulator() {
               type="text"
               value={customTool}
               onChange={(e) => setCustomTool(e.target.value)}
-              className="w-full rounded-lg border border-surface-border bg-surface-subtle px-3.5 py-2 font-mono text-xs text-white focus:border-brand-cyan focus:outline-none"
+              className="w-full rounded-xl border bg-black/40 px-3.5 py-2 font-mono text-xs text-white focus:outline-none"
+              style={{ borderColor: currentTheme.surfaceBorder }}
             />
           </div>
 
@@ -112,14 +131,19 @@ export function PolicySimulator() {
               rows={6}
               value={customPayload}
               onChange={(e) => setCustomPayload(e.target.value)}
-              className="w-full rounded-lg border border-surface-border bg-surface-subtle p-3.5 font-mono text-xs text-brand-cyan focus:border-brand-cyan focus:outline-none"
+              className="w-full rounded-xl border bg-black/40 p-3.5 font-mono text-xs focus:outline-none"
+              style={{
+                borderColor: currentTheme.surfaceBorder,
+                color: currentTheme.accent,
+              }}
             />
           </div>
 
           <button
             onClick={handleRunSimulation}
             disabled={isEvaluating}
-            className="flex items-center justify-center gap-2 w-full rounded-lg bg-brand-cyan py-2.5 text-xs font-semibold text-slate-950 hover:bg-cyan-400 transition-colors disabled:opacity-50"
+            className="flex items-center justify-center gap-2 w-full rounded-xl py-3 text-xs font-bold text-slate-950 transition-all hover:opacity-90 shadow-lg disabled:opacity-50"
+            style={{ backgroundColor: currentTheme.primary }}
           >
             <Play className="h-4 w-4 fill-slate-950" />
             <span>{isEvaluating ? 'Evaluating Constraints...' : 'Evaluate Pre-Flight Interception'}</span>
@@ -127,9 +151,15 @@ export function PolicySimulator() {
         </div>
 
         {/* Evaluation Output Window */}
-        <div className="rounded-xl border border-surface-border bg-surface-subtle p-5 flex flex-col justify-between">
+        <div
+          className="rounded-2xl border p-5 flex flex-col justify-between"
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.3)',
+            borderColor: currentTheme.surfaceBorder,
+          }}
+        >
           <div>
-            <div className="flex items-center justify-between border-b border-surface-border pb-3 mb-4">
+            <div className="flex items-center justify-between border-b pb-3 mb-4" style={{ borderColor: currentTheme.surfaceBorder }}>
               <span className="font-mono text-xs text-slate-400">Enforcement Engine Result</span>
               <span className="font-mono text-[10px] text-slate-500">Latency: 8.4ms</span>
             </div>
@@ -138,26 +168,32 @@ export function PolicySimulator() {
               <div className="space-y-4">
                 <div className="flex items-center gap-3">
                   {evaluationResult.decision === 'ALLOW' && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-status-success/20 border border-status-success/40 text-status-success text-xs font-bold">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-emerald-500/20 border border-emerald-500/40 text-emerald-400 text-xs font-bold">
                       <CheckCircle2 className="h-4 w-4" />
                       <span>ALLOW: Execution Permitted</span>
                     </div>
                   )}
                   {evaluationResult.decision === 'DENY' && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-status-critical/20 border border-status-critical/40 text-status-critical text-xs font-bold">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-rose-500/20 border border-rose-500/40 text-rose-400 text-xs font-bold">
                       <XCircle className="h-4 w-4" />
                       <span>DENY: Execution Halted In-Line</span>
                     </div>
                   )}
                   {evaluationResult.decision === 'REQUIRE_APPROVAL' && (
-                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-status-warning/20 border border-status-warning/40 text-status-warning text-xs font-bold">
+                    <div className="flex items-center gap-2 px-3 py-1.5 rounded-lg bg-amber-500/20 border border-amber-500/40 text-amber-400 text-xs font-bold">
                       <Clock className="h-4 w-4" />
                       <span>REQUIRE_APPROVAL: Paused for Human Sign-off</span>
                     </div>
                   )}
                 </div>
 
-                <div className="p-3.5 rounded-lg bg-surface border border-surface-border">
+                <div
+                  className="p-3.5 rounded-xl border"
+                  style={{
+                    backgroundColor: currentTheme.surface,
+                    borderColor: currentTheme.surfaceBorder,
+                  }}
+                >
                   <div className="text-[11px] font-mono text-slate-400">Matched Policy Rule</div>
                   <div className="text-xs font-semibold text-white mt-1">{evaluationResult.ruleMatched}</div>
                   <div className="text-xs text-slate-300 mt-2 leading-relaxed">{evaluationResult.reason}</div>
@@ -175,7 +211,7 @@ export function PolicySimulator() {
             )}
           </div>
 
-          <div className="pt-4 border-t border-surface-border text-[11px] text-slate-500 font-mono">
+          <div className="pt-4 border-t text-[11px] text-slate-500 font-mono" style={{ borderColor: currentTheme.surfaceBorder }}>
             Zero model hallucinations. Enforced by deterministic AST/Regex schema evaluators.
           </div>
         </div>

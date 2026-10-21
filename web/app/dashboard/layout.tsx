@@ -22,8 +22,10 @@ import {
 } from 'lucide-react';
 import { INITIAL_APPROVALS } from '../../lib/dataStore';
 import { useTheme } from '../../lib/themeContext';
+import { useOperations } from '../../lib/operationsContext';
 import { ThemeSelector } from '../../components/ThemeSelector';
 import { UserGuidance } from '../../components/UserGuidance';
+import { NotificationBell } from '../../components/NotificationBell';
 
 interface NavItem {
   label: string;
@@ -35,16 +37,16 @@ interface NavItem {
 export default function DashboardLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
   const { currentTheme } = useTheme();
+  const { unreadAlertCount, pendingApprovalCount } = useOperations();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const pendingCount = INITIAL_APPROVALS.filter((a) => a.status === 'PENDING').length;
 
   const navItems: NavItem[] = [
     { label: 'Overview', href: '/dashboard', icon: LayoutDashboard },
     { label: 'Agent Inventory', href: '/dashboard/agents', icon: Bot },
     { label: 'Policy Centre', href: '/dashboard/policies', icon: Sliders },
-    { label: 'Approval Queue', href: '/dashboard/approvals', icon: CheckSquare, badge: pendingCount },
+    { label: 'Approval Queue', href: '/dashboard/approvals', icon: CheckSquare, badge: pendingApprovalCount },
     { label: 'Audit Timeline', href: '/dashboard/activity', icon: Activity },
-    { label: 'Alerts & Incidents', href: '/dashboard/alerts', icon: AlertTriangle },
+    { label: 'Alerts & Incidents', href: '/dashboard/alerts', icon: AlertTriangle, badge: unreadAlertCount },
     { label: 'AI Security Copilot', href: '/dashboard/assistant', icon: Sparkles },
     { label: 'Enterprise Admin', href: '/dashboard/admin', icon: ShieldAlert },
     { label: 'Settings & Keys', href: '/dashboard/settings', icon: Settings },
@@ -194,6 +196,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           <span className="font-bold text-white text-sm">SentinelOps AI</span>
         </div>
         <div className="flex items-center gap-2">
+          <NotificationBell />
           <ThemeSelector />
           <button
             onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
@@ -254,6 +257,9 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
               <span>Latency: <strong style={{ color: currentTheme.primary }}>7.8ms</strong></span>
               <span>Enforcement: <strong className="text-emerald-400">100% Fail-Closed</strong></span>
             </div>
+
+            {/* Notification Bell */}
+            <NotificationBell />
 
             {/* Header Theme Switcher */}
             <ThemeSelector />

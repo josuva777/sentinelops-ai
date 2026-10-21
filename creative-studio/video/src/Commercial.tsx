@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, Sequence, useVideoConfig, interpolate, spring, useCurrentFrame } from 'remotion';
+import { AbsoluteFill, Sequence, useVideoConfig, interpolate, spring, useCurrentFrame, staticFile, Audio } from 'remotion';
 import { CommercialProps } from './types';
 
 export const Commercial: React.FC<CommercialProps> = ({
@@ -66,6 +66,34 @@ export const Commercial: React.FC<CommercialProps> = ({
           <span style={{ color: primaryColor }}>100% FAIL-CLOSED</span>
         </div>
       </div>
+
+      {/* AUDIO ENGINE: DYNAMIC SYNTH PULSE + TIMED SOUND EFFECTS */}
+      <Audio src={staticFile('audio/bg_cyber_pulse.wav')} volume={0.75} />
+      
+      {/* SFX: Threat Alarm at frame 30 */}
+      <Sequence from={30} durationInFrames={60}>
+        <Audio src={staticFile('audio/sfx_alarm.wav')} volume={0.65} />
+      </Sequence>
+
+      {/* SFX: High-tech Swoosh transition into Web Console at frame 210 */}
+      <Sequence from={205} durationInFrames={40}>
+        <Audio src={staticFile('audio/sfx_whoosh.wav')} volume={0.7} />
+      </Sequence>
+
+      {/* SFX: High-tech Swoosh transition into Pre-Flight Interception at frame 450 */}
+      <Sequence from={445} durationInFrames={40}>
+        <Audio src={staticFile('audio/sfx_whoosh.wav')} volume={0.7} />
+      </Sequence>
+
+      {/* SFX: Cryptographic Approval Chime in Mobile Scene at frame 780 */}
+      <Sequence from={775} durationInFrames={70}>
+        <Audio src={staticFile('audio/sfx_ping.wav')} volume={0.85} />
+      </Sequence>
+
+      {/* SFX: Sub-Bass Impact on SHA-256 Ledger seal at frame 930 */}
+      <Sequence from={930} durationInFrames={80}>
+        <Audio src={staticFile('audio/sfx_impact.wav')} volume={0.8} />
+      </Sequence>
 
       {/* ========================================================================= */}
       {/* SCENE 1 (0 to 3.5s = 0 to 210 frames): ROGUE AGENT CODE INFILTRATION     */}

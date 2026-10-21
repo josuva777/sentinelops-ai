@@ -79,15 +79,15 @@ export default function MobileAlertsScreen() {
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: '#080b11' },
+  container: { flex: 1, backgroundColor: '#060a08' },
   content: { padding: 20, paddingTop: 60, paddingBottom: 40 },
   header: { marginBottom: 20 },
   title: { fontSize: 20, fontWeight: '800', color: '#ffffff' },
   sub: { fontSize: 11, color: '#94a3b8', marginTop: 4 },
   list: { gap: 14 },
   card: {
-    backgroundColor: '#0e131f',
-    borderColor: '#1e293b',
+    backgroundColor: '#0d1511',
+    borderColor: '#16281e',
     borderWidth: 1,
     borderRadius: 14,
     padding: 16,
@@ -102,16 +102,16 @@ const styles = StyleSheet.create({
   timeText: { fontSize: 10, color: '#64748b', fontFamily: 'monospace' },
   alertTitle: { fontSize: 14, fontWeight: '700', color: '#ffffff', lineHeight: 20 },
   evidenceBox: {
-    backgroundColor: '#121826',
-    borderColor: '#1e293b',
+    backgroundColor: '#090e0b',
+    borderColor: '#16281e',
     borderWidth: 1,
     padding: 10,
     borderRadius: 8,
     marginTop: 10,
   },
   remediationBox: {
-    backgroundColor: 'rgba(6, 182, 212, 0.05)',
-    borderColor: 'rgba(6, 182, 212, 0.2)',
+    backgroundColor: 'rgba(16, 185, 129, 0.08)',
+    borderColor: 'rgba(16, 185, 129, 0.25)',
     borderWidth: 1,
     padding: 10,
     borderRadius: 8,
@@ -119,8 +119,8 @@ const styles = StyleSheet.create({
   },
   boxLabel: { fontSize: 9, color: '#94a3b8', textTransform: 'uppercase', fontWeight: '700', marginBottom: 2 },
   evidenceText: { fontSize: 11, color: '#cbd5e1', lineHeight: 16 },
-  remediationText: { fontSize: 11, color: '#06b6d4', lineHeight: 16 },
-  footer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, paddingTop: 10, borderTopColor: '#1e293b', borderTopWidth: 1 },
+  remediationText: { fontSize: 11, color: '#34d399', lineHeight: 16 },
+  footer: { flexDirection: 'row', justifyContent: 'space-between', marginTop: 12, paddingTop: 10, borderTopColor: '#16281e', borderTopWidth: 1 },
   agentTag: { fontSize: 10, color: '#94a3b8', fontFamily: 'monospace' },
   idTag: { fontSize: 10, color: '#64748b', fontFamily: 'monospace' },
 });

@@ -47,14 +47,14 @@ export function Navbar() {
         </Link>
 
         <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
+          <Link href="/#about" className="hover:text-white transition-colors">
+            About Us
+          </Link>
           <Link href="#architecture" className="hover:text-white transition-colors">
             Architecture
           </Link>
           <Link href="#simulator" className="hover:text-white transition-colors">
-            Interactive Simulator
-          </Link>
-          <Link href="#integrations" className="hover:text-white transition-colors">
-            Python SDK
+            Simulator
           </Link>
           <Link href="/docs" className="hover:text-white transition-colors">
             Docs & API
