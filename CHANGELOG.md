@@ -5,6 +5,16 @@ All notable changes to the SentinelOps AI platform will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.0] - 2026-10-21
+
+### Added
+- **Supreme Master Admin Full Authority**: Pre-seeded `josuva732006@gmail.com` with password `josuva/12345` as the supreme immutable Master Administrator (`is_master_admin = 1`) with `ENTERPRISE` tier access (10,000,000 calls).
+- **Persistent Relational SQLite Database**: Created `backend/sentinelops.db` with salted SHA-256 password hashing, session tokens, and user governance schemas. Synchronized `/api/v1/auth/login` and `/api/v1/auth/register` endpoints.
+- **Master Admin Promotion Exclusivity**: Removed demo self-elevation buttons. Only the Master Admin can promote other users to `SUPER_ADMIN` or demote/suspend accounts from the Admin Center.
+- **Enterprise Admin Sidebar Hiding**: The "Enterprise Admin" nav item in `/dashboard` is strictly hidden from non-admin users. Direct URL navigation to `/dashboard/admin` enforces an unbypassable HTTP 403 lock screen.
+- **Standalone Web APK Deliverable (`web.apk`)**: Packaged native installable Android WebAPK package (`releases/web.apk` and `web/public/downloads/web.apk`) with SHA-256 integrity verification, plus direct download actions in Navbar, Hero, and Desktop Modal.
+- **Windows Desktop Delivery**: Copied `web.apk` directly to user's Windows Desktop at `C:\Users\ELCOT\OneDrive\Desktop\web.apk`.
+
 ## [1.2.0] - 2026-10-21
 
 ### Added
