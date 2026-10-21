@@ -1,31 +1,16 @@
 {
+  "product": "SentinelOps AI Mobile SecOps Companion",
   "version": "1.0.0",
-  "release_tag": "v1.0.0",
-  "build_timestamp": "2026-10-21T14:12:23.686385",
-  "packages": {
-    "web_apk": {
-      "file_name": "web.apk",
-      "display_name": "SentinelOps Web App Android Package (WebAPK)",
-      "package_id": "ai.sentinelops.web",
-      "size_bytes": 1861,
-      "sha256": "E8A9EA30896B01978026A7A7025B835B491974AA5E74D5D1D92B09ED8C3F02A6",
-      "download_url": "/downloads/web.apk"
-    },
-    "mobile_apk": {
-      "file_name": "sentinelops-mobile.apk",
-      "display_name": "SentinelOps Agent Security Monitor (Native APK)",
-      "package_id": "ai.sentinelops.mobile",
-      "size_bytes": 618,
-      "download_url": "/downloads/sentinelops-mobile.apk"
-    }
-  },
-  "compatibility": {
-    "min_android_version": "Android 8.0 (API 26)",
-    "target_android_version": "Android 14 (API 34)",
-    "architecture": [
-      "arm64-v8a",
-      "armeabi-v7a",
-      "x86_64"
-    ]
-  }
+  "build_type": "release-signed",
+  "package_name": "ai.sentinelops.mobile",
+  "file_name": "sentinelops-mobile.apk",
+  "sha256": "741A39305F88D1FEAE02831D46E9DF75F6AFAD7D09EAD72C3D6BB1A811F3075B",
+  "size_bytes": 16930,
+  "verified": true,
+  "schemes": [
+    "v1",
+    "v2",
+    "v3"
+  ],
+  "timestamp": "2026-10-21T16:25:28.890511"
 }

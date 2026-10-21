@@ -25,6 +25,7 @@ venv/
 
 # Mobile / Expo
 .expo/
+mobile/real_apk_build/
 mobile/android/build/
 mobile/android/.gradle/
 mobile/android/local.properties
