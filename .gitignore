@@ -23,7 +23,12 @@ venv/
 
 # Mobile / Expo
 .expo/
-android/
+mobile/android/build/
+mobile/android/.gradle/
+mobile/android/local.properties
+mobile/android/app/build/
+mobile/android/.cxx/
+mobile/android/*.iml
 ios/
 
 # Media / Outputs

@@ -1,0 +1,56 @@
+[
+  {
+    "id": "ASI-01",
+    "title": "Prompt Injection & Jailbreak Override",
+    "threat_category": "Adversarial Input",
+    "cwe": "CWE-20",
+    "severity": "critical",
+    "description": "User or untrusted retrieved data contains adversarial instructions overriding agent constraints, causing tool execution outside intended boundaries.",
+    "remediation": "Isolate untrusted context, sanitize inputs, enforce strict deterministic pre-flight AST policy evaluation, reject unvalidated instructions."
+  },
+  {
+    "id": "ASI-02",
+    "title": "Unauthorized Destructive Database Execution",
+    "threat_category": "Tool Misuse & Privileged Execution",
+    "cwe": "CWE-89",
+    "severity": "critical",
+    "description": "Agent executes DROP, TRUNCATE, ALTER or destructive DELETE statements without transaction safeguards or human supervision.",
+    "remediation": "Enforce Zero-Destruction Guardrail (r_zero_destruct). Strip DDL privileges from agent database role. Fail closed on all destructive patterns."
+  },
+  {
+    "id": "ASI-03",
+    "title": "Unbounded Financial & Asset Settlement",
+    "threat_category": "Excessive Agency",
+    "cwe": "CWE-285",
+    "severity": "high",
+    "description": "Agent initiates large payments, cryptocurrency transfers, or financial reconciliations exceeding organizational threshold limits.",
+    "remediation": "Enforce single-use 15-minute TTL tokens requiring multi-operator cryptographic sign-off for any transaction exceeding $5,000."
+  },
+  {
+    "id": "ASI-04",
+    "title": "Credential & Environment Exfiltration",
+    "threat_category": "Data Leakage",
+    "cwe": "CWE-200",
+    "severity": "critical",
+    "description": "Agent reads environment secrets (.env, AWS_SECRET_ACCESS_KEY, private keys) and forwards them via web fetch or logging payloads.",
+    "remediation": "Block access to OS environment variables. Restrict file access to sandboxed workspaces. Filter egress network requests."
+  },
+  {
+    "id": "ASI-05",
+    "title": "Mass Automated Dispatch & Spam Amplification",
+    "threat_category": "Resource Abuse",
+    "cwe": "CWE-400",
+    "severity": "high",
+    "description": "Agent executes mass email dispatch, webhook flooding, or notification broadcast without rate-limiting or recipient validation.",
+    "remediation": "Enforce recipient count constraints (recipient_count <= 1). Rate-limit external notification channels with exponential backoff."
+  },
+  {
+    "id": "ASI-06",
+    "title": "Cryptographic Audit Ledger Tampering",
+    "threat_category": "Integrity Failure",
+    "cwe": "CWE-353",
+    "severity": "critical",
+    "description": "Adversary or compromised agent modifies historical activity logs to hide unauthorized tool calls.",
+    "remediation": "Maintain an immutable SHA-256 hash-chained block ledger where every event is cryptographically bound to the previous block hash."
+  }
+]

@@ -2,13 +2,14 @@
   "name": "sentinelops-commercial",
   "version": "1.0.0",
   "scripts": {
-    "start": "remotion preview src/index.ts",
-    "build": "remotion render src/index.ts Commercial out/commercial.mp4"
+    "start": "remotion preview src/index.tsx",
+    "build": "remotion render src/index.tsx Commercial out/commercial.mp4"
   },
   "dependencies": {
-    "remotion": "^4.0.0",
+    "@remotion/cli": "^4.0.537",
     "react": "18.3.1",
-    "react-dom": "18.3.1"
+    "react-dom": "18.3.1",
+    "remotion": "^4.0.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.0",

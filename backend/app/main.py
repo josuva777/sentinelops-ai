@@ -9,6 +9,7 @@ from app.models import (
     AuditRecord,
 )
 from app.engine import engine
+from app.ai import rag_engine, trainer, model_manager
 
 app = FastAPI(
     title="SentinelOps AI Enforcement Gateway",
@@ -86,27 +87,25 @@ def verify_audit_ledger():
         "detail": message,
     }
 
-# 4. Context-Aware AI Security Assistant Query
+# 4. Context-Aware AI Security Assistant Query (Powered by Real RAG & Vector Retrieval)
 @app.post("/api/v1/ai/explain")
 def explain_security_event(query: str):
     """
-    Bounded, context-restricted assistant explanation based strictly on telemetry ledger data.
+    Real RAG-powered cybersecurity assistant. Performs semantic retrieval over OWASP Agentic Top 10
+    and NIST AI benchmarks, returning grounded findings and citations.
     """
-    lower = query.lower()
-    if "drop" in lower or "table" in lower:
-        return {
-            "explanation": "Event was blocked under rule 'r_zero_destruct' (Zero-Destruction Guardrail). Autonomous agents are prohibited from schema alterations or table truncation.",
-            "evidence": ["Rule: r_zero_destruct", "Decision: DENY", "Data Loss: 0 bytes"],
-            "remediation": "Audit the calling agent's prompt template and enforce read-only role credentials.",
-        }
-    elif "wire" in lower or "settle" in lower:
-        return {
-            "explanation": "Event was paused under rule 'r_large_wire'. Autonomous settlement over $5,000 threshold requires explicit human operator authorization.",
-            "evidence": ["Rule: r_large_wire", "Decision: REQUIRE_APPROVAL", "TTL: 15 minutes"],
-            "remediation": "Verify payee against ERP records before approving.",
-        }
-    return {
-        "explanation": f"Evaluation of query '{query}': Active deterministic policies are enforcing fail-closed guardrails across all 4 monitored agent workflows.",
-        "evidence": ["Ledger Checksum: Valid", "Active Policies: 1"],
-        "remediation": "Maintain current security baselines.",
-    }
+    return rag_engine.explain_event(query=query)
+
+@app.post("/api/v1/ai/predict")
+def predict_security_action(prompt: str, tool_name: str, arguments: Optional[dict] = None):
+    """
+    Inference via fine-tuned security classification head trained on agent execution traces.
+    """
+    return trainer.predict(prompt=prompt, tool=tool_name, arguments=arguments or {})
+
+@app.get("/api/v1/ai/models")
+def list_ai_models():
+    """
+    Returns inventory of installed local models and HuggingFace weights.
+    """
+    return model_manager.list_local_models()
