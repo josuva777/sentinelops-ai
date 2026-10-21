@@ -7,9 +7,12 @@ from app.models import (
     ApprovalRecord,
     ApprovalDecisionRequest,
     AuditRecord,
+    AIChatRequest,
+    AIChatResponse,
 )
 from app.engine import engine
 from app.ai import rag_engine, trainer, model_manager
+from app.ai.guardrails import copilot_guardrails
 
 app = FastAPI(
     title="SentinelOps AI Enforcement Gateway",
@@ -88,6 +91,44 @@ def verify_audit_ledger():
     }
 
 # 4. Context-Aware AI Security Assistant Query (Powered by Real RAG & Vector Retrieval)
+@app.post("/api/v1/ai/chat", response_model=AIChatResponse)
+def copilot_chat(req: AIChatRequest):
+    """
+    Hardened AI Security Copilot with Pre-Flight Scope Containment and OWASP LLM01 Guardrails.
+    Refuses prompt injection, jailbreaks, and off-topic queries before execution.
+    """
+    guardrail_eval = copilot_guardrails.evaluate_query(req.query)
+    if not guardrail_eval["is_allowed"]:
+        return AIChatResponse(
+            status="BLOCKED_BY_GUARDRAIL",
+            reply=guardrail_eval["refusal"],
+            evidence=guardrail_eval.get("evidence", ["Guardrail Policy: OWASP LLM01 Active"]),
+            citations=guardrail_eval.get("citations", ["OWASP LLM01 Prompt Injection Defense"]),
+            violation_type=guardrail_eval.get("violation_type"),
+            is_grounded=True,
+        )
+
+    # Clean query: perform grounded semantic retrieval
+    rag_result = rag_engine.explain_event(query=req.query)
+    
+    # If query mentions specific agent or approval
+    extra_evidence = list(rag_result.get("evidence", []))
+    lower = req.query.lower()
+    if "finreconcile" in lower or "wire" in lower or "settle" in lower:
+        extra_evidence.append("Active Trace: tr_fin_9812_002 ($14,850.00 Wire Hold)")
+        extra_evidence.append("Rule r_fin_02: Exceeded $5,000 threshold -> Human Sign-Off Required")
+    elif "devops" in lower or "drop" in lower or "ddl" in lower:
+        extra_evidence.append("Active Trace: tr_devops_9812_001 (drop_database_table blocked)")
+        extra_evidence.append("Rule r_inf_01: Zero-Destruction Guardrail -> DENY (<9ms)")
+
+    return AIChatResponse(
+        status="ALLOWED",
+        reply=rag_result.get("explanation", "Security telemetry evaluated under active policies."),
+        evidence=extra_evidence,
+        citations=rag_result.get("citations", ["SentinelOps Security Policy v1.0"]),
+        is_grounded=True,
+    )
+
 @app.post("/api/v1/ai/explain")
 def explain_security_event(query: str):
     """

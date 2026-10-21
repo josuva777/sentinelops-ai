@@ -41,3 +41,5 @@ ios/
 Thumbs.db
 .vscode/*
 !.vscode/settings.json
+.idea/
+*.zip

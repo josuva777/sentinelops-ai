@@ -69,3 +69,16 @@ class Policy(BaseModel):
     mode: Literal["ENFORCE", "SIMULATE"] = "ENFORCE"
     target_agents: List[str] = ["*"]
     rules: List[PolicyRule]
+
+class AIChatRequest(BaseModel):
+    query: str
+    api_key: Optional[str] = None
+    agent_id: Optional[str] = None
+
+class AIChatResponse(BaseModel):
+    status: Literal["ALLOWED", "BLOCKED_BY_GUARDRAIL"]
+    reply: str
+    evidence: List[str] = Field(default_factory=list)
+    citations: List[str] = Field(default_factory=list)
+    violation_type: Optional[str] = None
+    is_grounded: bool = True

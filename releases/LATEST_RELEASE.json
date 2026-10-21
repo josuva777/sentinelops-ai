@@ -1,0 +1,16 @@
+{
+  "product": "SentinelOps AI Mobile SecOps Companion",
+  "version": "1.0.0",
+  "build_type": "release-ready",
+  "package_name": "com.sentinelops.mobile",
+  "platform": "Android (SDK 24-35)",
+  "features": [
+    "1-Tap Mobile Push Approvals with 15m cryptographic TTL",
+    "Real-time Incident & Breach Alert Notifications",
+    "Grounded AI Security Assistant Chat",
+    "Matrix Obsidian & Emerald Theme Engine"
+  ],
+  "build_command": ".\\mobile\\build_apk.bat",
+  "output_directory": "releases/",
+  "timestamp": "2026-10-21T18:40:00Z"
+}
