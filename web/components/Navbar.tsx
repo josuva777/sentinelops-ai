@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { Shield, ArrowRight, Smartphone } from 'lucide-react';
+import { Shield, ArrowRight } from 'lucide-react';
 import { ThemeSelector } from './ThemeSelector';
 import { InstallDesktopApp } from './InstallDesktopApp';
 import { useTheme } from '../lib/themeContext';
@@ -47,31 +47,22 @@ export function Navbar() {
           </div>
         </Link>
 
-        <nav className="hidden md:flex items-center gap-7 text-sm font-medium text-slate-300">
-          <Link href="/#about" className="hover:text-white transition-colors">
+        <nav className="hidden md:flex items-center gap-6 text-sm font-medium text-slate-300">
+          <Link href="/#about" className="hover:text-white transition-colors whitespace-nowrap">
             About Us
           </Link>
-          <Link href="/#architecture" className="hover:text-white transition-colors">
+          <Link href="/#architecture" className="hover:text-white transition-colors whitespace-nowrap">
             Architecture
           </Link>
-          <Link href="/#simulator" className="hover:text-white transition-colors">
+          <Link href="/#simulator" className="hover:text-white transition-colors whitespace-nowrap">
             Simulator
           </Link>
-          <Link href="/docs" className="hover:text-white transition-colors">
+          <Link href="/docs" className="hover:text-white transition-colors whitespace-nowrap">
             Docs & API
           </Link>
-          <Link href="/pricing" className="hover:text-white transition-colors font-semibold">
+          <Link href="/pricing" className="hover:text-white transition-colors whitespace-nowrap">
             Pricing
           </Link>
-          <a
-            href="/downloads/sentinelops-mobile.apk"
-            download
-            className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white transition-colors font-mono"
-            title="Download Android Companion APK"
-          >
-            <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
-            <span>Mobile APK</span>
-          </a>
         </nav>
 
         <div className="flex items-center gap-3">

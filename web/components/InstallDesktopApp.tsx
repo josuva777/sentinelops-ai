@@ -2,7 +2,7 @@
 
 import React, { useState, useEffect } from 'react';
 import { createPortal } from 'react-dom';
-import { Download, Monitor, Check, X, Shield, ArrowDownToLine } from 'lucide-react';
+import { Download, Monitor, Check, X, Shield, ArrowDownToLine, Smartphone } from 'lucide-react';
 import { useTheme } from '../lib/themeContext';
 
 export function InstallDesktopApp() {
@@ -88,8 +88,8 @@ exit
             <Monitor className="w-5 h-5" />
           </div>
           <div>
-            <h3 className="text-base font-bold text-white">Install SentinelOps AI Desktop App</h3>
-            <p className="text-xs text-slate-400">Run as a standalone native window or install on Android</p>
+            <h3 className="text-base font-bold text-white">SentinelOps AI Desktop & Mobile Apps</h3>
+            <p className="text-xs text-slate-400">Windows desktop launcher (.bat), PWA, Web APK, and Mobile Companion</p>
           </div>
         </div>
 
@@ -126,10 +126,10 @@ exit
             <div className="space-y-1">
               <div className="font-bold text-white flex items-center gap-2">
                 <ArrowDownToLine className="w-3.5 h-3.5 text-cyan-400" />
-                <span>Windows Desktop App Launcher (.bat)</span>
+                <span>Windows Desktop Launcher (.bat)</span>
               </div>
               <div className="text-[11px] text-slate-400">
-                Downloads a 1-click launcher shortcut to open SentinelOps in dedicated app mode on your desktop.
+                Downloads a 1-click launcher shortcut to open SentinelOps in dedicated app mode on Windows.
               </div>
             </div>
 
@@ -150,16 +150,41 @@ exit
             <div className="space-y-1">
               <div className="font-bold text-white flex items-center gap-2">
                 <Download className="w-3.5 h-3.5 text-emerald-400" />
-                <span>Android Web APK (web.apk)</span>
+                <span>Android Web Console APK (web.apk)</span>
               </div>
               <div className="text-[11px] text-slate-400">
-                Direct installable Android application package wrapping the complete SentinelOps web console.
+                Standalone installable Android APK wrapping the full SentinelOps web console.
               </div>
             </div>
 
             <a
               href="/downloads/web.apk"
               download="web.apk"
+              className="px-4 py-2 rounded-lg border font-bold text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10 transition-colors shrink-0 text-xs inline-flex items-center gap-1.5 cursor-pointer"
+            >
+              <Download className="w-3.5 h-3.5" />
+              <span>Download APK</span>
+            </a>
+          </div>
+
+          {/* Option 4: Standalone Android Mobile Companion APK */}
+          <div
+            className="p-3.5 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-black/30"
+            style={{ borderColor: currentTheme.surfaceBorder }}
+          >
+            <div className="space-y-1">
+              <div className="font-bold text-white flex items-center gap-2">
+                <Smartphone className="w-3.5 h-3.5 text-emerald-400" />
+                <span>Android Companion APK (mobile.apk)</span>
+              </div>
+              <div className="text-[11px] text-slate-400">
+                Native security monitor companion with real-time push alerts and cryptographic human approvals.
+              </div>
+            </div>
+
+            <a
+              href="/downloads/mobile.apk"
+              download="sentinelops-mobile.apk"
               className="px-4 py-2 rounded-lg border font-bold text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10 transition-colors shrink-0 text-xs inline-flex items-center gap-1.5 cursor-pointer"
             >
               <Download className="w-3.5 h-3.5" />
@@ -182,17 +207,20 @@ exit
     <>
       <button
         onClick={() => setIsOpen(true)}
-        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 hover:opacity-90 cursor-pointer"
+        className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg border text-xs font-mono transition-all duration-200 hover:opacity-90 cursor-pointer whitespace-nowrap"
         style={{
           borderColor: currentTheme.surfaceBorder,
           backgroundColor: currentTheme.surface,
           color: currentTheme.accent,
         }}
-        title="Download / Install Desktop Web App"
+        title="Download / Install Desktop & Mobile Apps"
       >
-        <Monitor className="w-3.5 h-3.5" style={{ color: currentTheme.primary }} />
+        <Monitor className="w-3.5 h-3.5 shrink-0" style={{ color: currentTheme.primary }} />
         <span className="hidden sm:inline font-semibold">
-          {isInstalled ? 'Desktop App' : 'Get Desktop App'}
+          Desktop & Mobile App
+        </span>
+        <span className="sm:hidden font-semibold">
+          Apps
         </span>
       </button>
 
