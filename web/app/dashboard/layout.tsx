@@ -56,7 +56,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
     { label: 'Audit Timeline', href: '/dashboard/activity', icon: Activity },
     { label: 'Alerts & Incidents', href: '/dashboard/alerts', icon: AlertTriangle, badge: unreadAlertCount },
     { label: 'AI Security Copilot', href: '/dashboard/assistant', icon: Sparkles },
-    { label: 'Enterprise Admin', href: '/dashboard/admin', icon: ShieldAlert },
+    ...(currentUser.role === 'SUPER_ADMIN' ? [{ label: 'Enterprise Admin', href: '/dashboard/admin', icon: ShieldAlert }] : []),
     { label: 'Settings & Keys', href: '/dashboard/settings', icon: Settings },
   ];
 

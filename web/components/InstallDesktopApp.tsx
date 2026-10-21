@@ -152,6 +152,31 @@ exit
                   Download .bat
                 </button>
               </div>
+
+              {/* Option 3: Standalone Android Web APK */}
+              <div
+                className="p-4 rounded-xl border flex flex-col sm:flex-row sm:items-center justify-between gap-3 bg-black/30"
+                style={{ borderColor: currentTheme.surfaceBorder }}
+              >
+                <div className="space-y-1">
+                  <div className="font-bold text-white flex items-center gap-2">
+                    <Download className="w-3.5 h-3.5 text-emerald-400" />
+                    <span>Android Web APK (web.apk)</span>
+                  </div>
+                  <div className="text-[11px] text-slate-400">
+                    Direct installable Android application package wrapping the complete SentinelOps web console.
+                  </div>
+                </div>
+
+                <a
+                  href="/downloads/web.apk"
+                  download="web.apk"
+                  className="px-4 py-2 rounded-lg border font-bold text-emerald-400 border-emerald-500/40 hover:bg-emerald-500/10 transition-colors shrink-0 text-xs inline-flex items-center gap-1.5"
+                >
+                  <Download className="w-3.5 h-3.5" />
+                  <span>Download APK</span>
+                </a>
+              </div>
             </div>
 
             <div className="pt-2 border-t flex items-center justify-between text-[11px] font-mono text-slate-400" style={{ borderColor: currentTheme.surfaceBorder }}>
@@ -166,3 +191,4 @@ exit
     </>
   );
 }
+

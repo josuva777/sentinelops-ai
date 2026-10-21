@@ -15,3 +15,4 @@ if %ERRORLEVEL% EQU 0 exit /b 0
 :: Default browser fallback
 start http://localhost:3000/dashboard
 exit /b 0
+

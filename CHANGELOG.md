@@ -23,3 +23,4 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - **Grounded Vector RAG AI Security Copilot**: Contextual retrieval over OWASP Top 10 for Agentic AI with mathematical pure-Python cosine similarity fallback.
 - **Transparent Multi-Tier Commercial Pricing**: Enterprise pricing matrix (`/pricing`) featuring monthly/annual billing toggles, interactive contact sales modal, and SOC2/HIPAA trust badges.
 - **Full-Screen 60fps Multi-Palette Engine**: Cyberpunk Matrix, Swiss Bauhaus, Avionics Amber, Oceanic Cobalt, and Lockdown Crimson with zero hardcoded hex leakage.
+

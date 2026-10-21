@@ -82,3 +82,38 @@ class AIChatResponse(BaseModel):
     citations: List[str] = Field(default_factory=list)
     violation_type: Optional[str] = None
     is_grounded: bool = True
+
+
+class LoginRequest(BaseModel):
+    email: str
+    password: str
+
+class RegisterRequest(BaseModel):
+    name: str
+    email: str
+    password: str
+    company: str
+
+class UserResponse(BaseModel):
+    id: str
+    name: str
+    email: str
+    company: str
+    role: str
+    tier: str
+    tool_calls_used: int
+    tool_calls_limit: int
+    is_suspended: bool
+    is_master_admin: bool
+    ip_address: Optional[str] = None
+    device: Optional[str] = None
+    last_active: Optional[str] = None
+
+class LoginResponse(BaseModel):
+    success: bool
+    token: Optional[str] = None
+    user: Optional[UserResponse] = None
+    error: Optional[str] = None
+
+class RoleUpdateRequest(BaseModel):
+    role: str

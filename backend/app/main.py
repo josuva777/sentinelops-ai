@@ -150,3 +150,151 @@ def list_ai_models():
     Returns inventory of installed local models and HuggingFace weights.
     """
     return model_manager.list_local_models()
+
+
+# =========================================================================
+# 5. ENTERPRISE AUTHENTICATION, RBAC & PERSISTENT SQLITE DATABASE
+# =========================================================================
+from app.db import (
+    get_user_by_email,
+    get_user_by_id,
+    get_user_by_token,
+    get_all_users,
+    create_user,
+    create_session,
+    verify_password,
+    update_user_role,
+    set_user_suspension,
+)
+from app.models import LoginRequest, RegisterRequest, LoginResponse, UserResponse, RoleUpdateRequest
+
+DISPOSABLE_DOMAINS = {
+    "tempmail.com", "mailinator.com", "10minutemail.com", "guerrillamail.com",
+    "sharklasers.com", "yopmail.com", "dispostable.com", "trashmail.com",
+    "getairmail.com", "mytemp.email", "tempail.com", "fakeinbox.com",
+    "throwawaymail.com", "burnermail.io", "generator.email"
+}
+
+def to_user_response(u: dict) -> UserResponse:
+    return UserResponse(
+        id=u["id"],
+        name=u["name"],
+        email=u["email"],
+        company=u["company"],
+        role=u["role"],
+        tier=u["tier"],
+        tool_calls_used=u["tool_calls_used"],
+        tool_calls_limit=u["tool_calls_limit"],
+        is_suspended=bool(u["is_suspended"]),
+        is_master_admin=bool(u.get("is_master_admin", 0)),
+        ip_address=u.get("ip_address"),
+        device=u.get("device"),
+        last_active=u.get("last_active"),
+    )
+
+@app.post("/api/v1/auth/login", response_model=LoginResponse)
+def login(req: LoginRequest):
+    user = get_user_by_email(req.email)
+    if not user:
+        return LoginResponse(success=False, error="Invalid credentials. Tenant account not found.")
+
+    if user["is_suspended"]:
+        return LoginResponse(success=False, error="Account Suspended: This user was locked by the Master Admin.")
+
+    if not verify_password(req.password, user["password_hash"], user["salt"]):
+        return LoginResponse(success=False, error="Invalid credentials. Incorrect password.")
+
+    token = create_session(user["id"])
+    return LoginResponse(success=True, token=token, user=to_user_response(user))
+
+@app.post("/api/v1/auth/register", response_model=LoginResponse)
+def register(req: RegisterRequest):
+    email = req.email.strip().lower()
+    domain = email.split("@")[-1] if "@" in email else ""
+    if domain in DISPOSABLE_DOMAINS:
+        raise HTTPException(
+            status_code=400,
+            detail="Anti-Sybil Defense: Disposable, temporary, or burner email domains are strictly prohibited."
+        )
+
+    existing = get_user_by_email(email)
+    if existing:
+        raise HTTPException(status_code=400, detail="An account with this email already exists.")
+
+    user = create_user(
+        name=req.name,
+        email=email,
+        password=req.password,
+        company=req.company,
+        role="DEVELOPER",
+        tier="FREE"
+    )
+    token = create_session(user["id"])
+    return LoginResponse(success=True, token=token, user=to_user_response(user))
+
+@app.get("/api/v1/auth/me", response_model=UserResponse)
+def get_current_user(authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Authentication required.")
+    token = authorization.replace("Bearer ", "")
+    user = get_user_by_token(token)
+    if not user:
+        raise HTTPException(status_code=401, detail="Session expired or invalid.")
+    return to_user_response(user)
+
+@app.get("/api/v1/admin/users", response_model=List[UserResponse])
+def list_admin_users(authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Admin authorization required.")
+    token = authorization.replace("Bearer ", "")
+    requesting = get_user_by_token(token)
+    if not requesting or requesting["role"] != "SUPER_ADMIN":
+        raise HTTPException(status_code=403, detail="HTTP 403 Forbidden: Super Admin authorization required.")
+
+    users = get_all_users()
+    return [to_user_response(u) for u in users]
+
+@app.post("/api/v1/admin/users/{user_id}/role")
+def change_role(user_id: str, req: RoleUpdateRequest, authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Master Admin token required.")
+    token = authorization.replace("Bearer ", "")
+    requesting = get_user_by_token(token)
+    if not requesting or not requesting.get("is_master_admin"):
+        raise HTTPException(status_code=403, detail="HTTP 403: Only the Supreme Master Admin (josuva732006@gmail.com) can grant administrative privileges.")
+
+    try:
+        update_user_role(user_id, req.role, requesting)
+        return {"success": True, "message": f"User role updated to {req.role}"}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/v1/admin/users/{user_id}/suspend")
+def suspend_user_endpoint(user_id: str, authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Admin token required.")
+    token = authorization.replace("Bearer ", "")
+    requesting = get_user_by_token(token)
+    if not requesting or requesting["role"] != "SUPER_ADMIN":
+        raise HTTPException(status_code=403, detail="HTTP 403: Admin authorization required.")
+
+    try:
+        set_user_suspension(user_id, True, requesting)
+        return {"success": True, "message": "User session terminated and suspended."}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/v1/admin/users/{user_id}/reactivate")
+def reactivate_user_endpoint(user_id: str, authorization: Optional[str] = Header(None)):
+    if not authorization or not authorization.startswith("Bearer "):
+        raise HTTPException(status_code=401, detail="Admin token required.")
+    token = authorization.replace("Bearer ", "")
+    requesting = get_user_by_token(token)
+    if not requesting or requesting["role"] != "SUPER_ADMIN":
+        raise HTTPException(status_code=403, detail="HTTP 403: Admin authorization required.")
+
+    try:
+        set_user_suspension(user_id, False, requesting)
+        return {"success": True, "message": "User reactivated."}
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))

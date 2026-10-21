@@ -43,7 +43,7 @@ const INITIAL_KEYS: ApiKeyItem[] = [
 
 export default function AdminPage() {
   const { currentTheme } = useTheme();
-  const { currentUser, allUsers, suspendUser, reactivateUser, switchRole } = useAuth();
+  const { currentUser, allUsers, suspendUser, reactivateUser, promoteUser } = useAuth();
 
   const [killSwitchActive, setKillSwitchActive] = useState<boolean>(false);
   const [keys, setKeys] = useState<ApiKeyItem[]>(INITIAL_KEYS);
@@ -84,19 +84,19 @@ export default function AdminPage() {
         </div>
 
         <div className="pt-2 flex flex-col sm:flex-row items-center justify-center gap-3">
-          <button
-            onClick={() => switchRole('SUPER_ADMIN')}
-            className="px-5 py-2.5 rounded-xl font-mono text-xs font-bold text-slate-950 transition-all hover:opacity-90 shadow-lg"
-            style={{ backgroundColor: currentTheme.primary }}
-          >
-            Elevate to Super Admin (Demo Mode)
-          </button>
           <Link
             href="/dashboard"
+            className="px-6 py-2.5 rounded-xl font-mono text-xs font-bold text-slate-950 transition-all hover:opacity-90 shadow-lg"
+            style={{ backgroundColor: currentTheme.primary }}
+          >
+            ← Return to Dashboard
+          </Link>
+          <Link
+            href="/login"
             className="px-5 py-2.5 rounded-xl border font-mono text-xs text-slate-300 hover:text-white hover:bg-white/5 transition-colors"
             style={{ borderColor: currentTheme.surfaceBorder }}
           >
-            Return to Overview
+            Authenticate as Master Admin
           </Link>
         </div>
       </div>
@@ -322,26 +322,50 @@ export default function AdminPage() {
                       )}
                     </td>
                     <td className="py-3.5 text-right space-x-2">
-                      {u.isSuspended ? (
-                        <button
-                          onClick={() => {
-                            reactivateUser(u.id);
-                            setActionSuccess(`Account '${u.email}' reactivated successfully.`);
-                          }}
-                          className="text-[11px] text-emerald-400 hover:underline font-bold"
-                        >
-                          Reactivate
-                        </button>
+                      {u.isMasterAdmin ? (
+                        <span className="text-[10px] font-mono font-bold text-amber-400 bg-amber-400/10 px-2 py-1 rounded border border-amber-400/30">
+                          👑 Master Authority (Immutable)
+                        </span>
                       ) : (
-                        <button
-                          onClick={() => {
-                            suspendUser(u.id);
-                            setActionSuccess(`Account '${u.email}' suspended immediately. All session tokens revoked.`);
-                          }}
-                          className="text-[11px] text-rose-400 hover:text-rose-300 hover:underline"
-                        >
-                          Terminate / Suspend
-                        </button>
+                        <>
+                          {currentUser.isMasterAdmin && (
+                            <button
+                              onClick={() => {
+                                const newRole = u.role === 'SUPER_ADMIN' ? 'DEVELOPER' : 'SUPER_ADMIN';
+                                const res = promoteUser(u.id, newRole);
+                                if (res.success) {
+                                  setActionSuccess(`Role for '${u.email}' updated to ${newRole}.`);
+                                } else {
+                                  setActionSuccess(res.error || 'Failed to update role.');
+                                }
+                              }}
+                              className="text-[11px] text-amber-400 hover:text-amber-300 hover:underline font-bold mr-2"
+                            >
+                              {u.role === 'SUPER_ADMIN' ? 'Revoke Admin' : 'Promote to Admin'}
+                            </button>
+                          )}
+                          {u.isSuspended ? (
+                            <button
+                              onClick={() => {
+                                reactivateUser(u.id);
+                                setActionSuccess(`Account '${u.email}' reactivated successfully.`);
+                              }}
+                              className="text-[11px] text-emerald-400 hover:underline font-bold"
+                            >
+                              Reactivate
+                            </button>
+                          ) : (
+                            <button
+                              onClick={() => {
+                                suspendUser(u.id);
+                                setActionSuccess(`Account '${u.email}' suspended immediately. All session tokens revoked.`);
+                              }}
+                              className="text-[11px] text-rose-400 hover:text-rose-300 hover:underline"
+                            >
+                              Terminate / Suspend
+                            </button>
+                          )}
+                        </>
                       )}
                     </td>
                   </tr>

@@ -64,9 +64,18 @@ export function Navbar() {
             Pricing
           </Link>
           <a
+            href="/downloads/web.apk"
+            download
+            className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white transition-colors font-mono"
+            title="Download Standalone Web App Android APK"
+          >
+            <Smartphone className="w-3.5 h-3.5 text-cyan-400" />
+            <span>Web APK</span>
+          </a>
+          <a
             href="/downloads/sentinelops-mobile.apk"
             download
-            className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white transition-colors"
+            className="flex items-center gap-1.5 text-xs text-slate-300 hover:text-white transition-colors font-mono"
             title="Download Android Companion APK"
           >
             <Smartphone className="w-3.5 h-3.5 text-emerald-400" />

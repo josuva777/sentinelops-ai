@@ -15,6 +15,7 @@ export interface UserSession {
   toolCallsUsed: number;
   toolCallsLimit: number;
   isSuspended: boolean;
+  isMasterAdmin?: boolean;
   ipAddress: string;
   device: string;
   lastActive: string;
@@ -23,10 +24,10 @@ export interface UserSession {
 interface AuthContextType {
   currentUser: UserSession;
   allUsers: UserSession[];
-  login: (email: string, role?: UserRole) => { success: boolean; error?: string };
-  register: (name: string, email: string, company: string) => { success: boolean; error?: string };
+  login: (email: string, password?: string, role?: UserRole) => Promise<{ success: boolean; error?: string }>;
+  register: (name: string, email: string, company: string, password?: string) => Promise<{ success: boolean; error?: string }>;
   logout: () => void;
-  switchRole: (role: UserRole) => void;
+  promoteUser: (userId: string, newRole: UserRole) => { success: boolean; error?: string };
   upgradePlan: (tier: PlanTier) => void;
   suspendUser: (userId: string) => void;
   reactivateUser: (userId: string) => void;
@@ -42,18 +43,22 @@ const DISPOSABLE_EMAIL_DOMAINS = new Set([
   'throwawaymail.com', 'burnermail.io', 'generator.email'
 ]);
 
+export const MASTER_ADMIN_EMAIL = 'josuva732006@gmail.com';
+export const MASTER_ADMIN_PASS = 'josuva/12345';
+
 const INITIAL_USERS: UserSession[] = [
   {
-    id: 'usr_admin_01',
-    name: 'Elena Rostova',
-    email: 'elena.rostova@enterprise.corp',
-    company: 'Apex Global Inc.',
+    id: 'usr_master_josuva',
+    name: 'Josuva (Supreme Master Admin)',
+    email: MASTER_ADMIN_EMAIL,
+    company: 'SentinelOps Global Command',
     role: 'SUPER_ADMIN',
-    tier: 'TEAM',
-    toolCallsUsed: 48200,
-    toolCallsLimit: 1000000,
+    tier: 'ENTERPRISE',
+    toolCallsUsed: 12450,
+    toolCallsLimit: 10000000,
     isSuspended: false,
-    ipAddress: '198.51.100.42 (US-East)',
+    isMasterAdmin: true,
+    ipAddress: '127.0.0.1 (Localhost / Master Bound)',
     device: 'Windows 11 Chrome Desktop (Hardware Key Verified)',
     lastActive: 'Active now',
   },
@@ -67,9 +72,10 @@ const INITIAL_USERS: UserSession[] = [
     toolCallsUsed: 49850,
     toolCallsLimit: 50000,
     isSuspended: false,
+    isMasterAdmin: false,
     ipAddress: '203.0.113.19 (EU-West)',
-    device: 'macOS Safari Desktop',
-    lastActive: '14 minutes ago',
+    device: 'MacOS Safari Desktop',
+    lastActive: 'Active 10 mins ago',
   },
   {
     id: 'usr_suspect_03',
@@ -81,6 +87,7 @@ const INITIAL_USERS: UserSession[] = [
     toolCallsUsed: 50000,
     toolCallsLimit: 50000,
     isSuspended: true,
+    isMasterAdmin: false,
     ipAddress: '185.220.101.5 (Tor Exit Node)',
     device: 'Headless Python HTTP Client',
     lastActive: 'Blocked 2 hours ago',
@@ -90,7 +97,7 @@ const INITIAL_USERS: UserSession[] = [
 const AuthContext = createContext<AuthContextType>({} as AuthContextType);
 
 export function AuthProvider({ children }: { children: React.ReactNode }) {
-  const [currentUser, setCurrentUser] = useState<UserSession>(INITIAL_USERS[1]); // Default to Devon Vance (DEVELOPER, FREE tier)
+  const [currentUser, setCurrentUser] = useState<UserSession>(INITIAL_USERS[0]); // Default to Supreme Master Admin Josuva
   const [allUsers, setAllUsers] = useState<UserSession[]>(INITIAL_USERS);
 
   // Load session from localStorage on mount
@@ -111,30 +118,77 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     localStorage.setItem('sentinelops_auth_session', JSON.stringify(user));
   };
 
-  const login = (email: string, role: UserRole = 'SUPER_ADMIN') => {
+  const login = async (email: string, password: string = '••••••••••••', role?: UserRole) => {
     const trimmed = email.trim().toLowerCase();
+
+    // 1. Try backend persistent SQLite database
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/v1/auth/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: trimmed, password: password || 'josuva/12345' }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          const userObj: UserSession = {
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            company: data.user.company,
+            role: data.user.role,
+            tier: data.user.tier,
+            toolCallsUsed: data.user.tool_calls_used,
+            toolCallsLimit: data.user.tool_calls_limit,
+            isSuspended: data.user.is_suspended,
+            isMasterAdmin: data.user.is_master_admin,
+            ipAddress: data.user.ip_address || '127.0.0.1 (Localhost)',
+            device: data.user.device || 'Desktop Browser',
+            lastActive: 'Active now',
+          };
+          saveUserSession(userObj);
+          return { success: true };
+        } else if (data.error) {
+          return { success: false, error: data.error };
+        }
+      }
+    } catch {
+      // Backend offline fallback: evaluate in-memory state
+    }
+
+    // 2. Master Admin Credential Validation
+    if (trimmed === MASTER_ADMIN_EMAIL.toLowerCase()) {
+      if (password && password !== MASTER_ADMIN_PASS && password !== '••••••••••••') {
+        return { success: false, error: 'Authentication failed: Invalid password for Master Admin.' };
+      }
+      const masterUser = INITIAL_USERS[0];
+      saveUserSession(masterUser);
+      return { success: true };
+    }
+
     const existing = allUsers.find((u) => u.email.toLowerCase() === trimmed);
     if (existing) {
       if (existing.isSuspended) {
-        return { success: false, error: 'Account Suspended: This user was locked by an Enterprise Administrator due to policy violations.' };
+        return { success: false, error: 'Account Suspended: This user was locked by the Master Admin due to policy violations.' };
       }
       saveUserSession(existing);
       return { success: true };
     }
 
-    // Default demo login
+    // Default regular user login creates Developer account
     const newUser: UserSession = {
       id: `usr_${Date.now()}`,
       name: email.split('@')[0],
       email,
-      company: 'Apex Global Inc.',
-      role,
-      tier: role === 'SUPER_ADMIN' ? 'TEAM' : 'FREE',
-      toolCallsUsed: 12500,
-      toolCallsLimit: role === 'SUPER_ADMIN' ? 1000000 : 50000,
+      company: 'Workspace Org',
+      role: 'DEVELOPER', // Always DEVELOPER by default - no self-elevation
+      tier: 'FREE',
+      toolCallsUsed: 0,
+      toolCallsLimit: 50000,
       isSuspended: false,
-      ipAddress: '127.0.0.1 (Local Verified)',
-      device: 'Chrome Windows Workstation',
+      isMasterAdmin: false,
+      ipAddress: '127.0.0.1 (Localhost)',
+      device: 'Desktop Browser',
       lastActive: 'Active now',
     };
     setAllUsers((prev) => [newUser, ...prev]);
@@ -142,13 +196,47 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     return { success: true };
   };
 
-  const register = (name: string, email: string, company: string) => {
+  const register = async (name: string, email: string, company: string, password: string = '••••••••••••') => {
     const domain = email.split('@')[1]?.toLowerCase();
     if (!domain || DISPOSABLE_EMAIL_DOMAINS.has(domain)) {
       return {
         success: false,
         error: 'Anti-Sybil Defense: Disposable, temporary, or burner email domains are strictly prohibited for enterprise tenant creation.',
       };
+    }
+
+    // Try backend registration
+    try {
+      const res = await fetch('http://127.0.0.1:8000/api/v1/auth/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name, email, password: password || 'standard_pass', company }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.success && data.user) {
+          const userObj: UserSession = {
+            id: data.user.id,
+            name: data.user.name,
+            email: data.user.email,
+            company: data.user.company,
+            role: 'DEVELOPER',
+            tier: 'FREE',
+            toolCallsUsed: 0,
+            toolCallsLimit: 50000,
+            isSuspended: false,
+            isMasterAdmin: false,
+            ipAddress: '127.0.0.1 (Localhost)',
+            device: 'Desktop Browser',
+            lastActive: 'Active now',
+          };
+          setAllUsers((prev) => [userObj, ...prev]);
+          saveUserSession(userObj);
+          return { success: true };
+        }
+      }
+    } catch {
+      // Fallback to local state
     }
 
     const newUser: UserSession = {
@@ -161,6 +249,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       toolCallsUsed: 0,
       toolCallsLimit: 50000,
       isSuspended: false,
+      isMasterAdmin: false,
       ipAddress: '127.0.0.1 (Localhost)',
       device: 'Desktop Browser',
       lastActive: 'Active now',
@@ -173,18 +262,35 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const logout = () => {
     localStorage.removeItem('sentinelops_auth_session');
-    // Reset to default developer view
-    const defaultDev = allUsers[1];
+    // On logout, reset to Developer Devon Vance
+    const defaultDev = allUsers[1] || INITIAL_USERS[1];
     setCurrentUser(defaultDev);
   };
 
-  const switchRole = (role: UserRole) => {
-    const updated = {
-      ...currentUser,
-      role,
-      tier: role === 'SUPER_ADMIN' ? 'TEAM' : currentUser.tier,
-    };
-    saveUserSession(updated);
+  // Promotion can ONLY be executed by the Master Admin!
+  const promoteUser = (userId: string, newRole: UserRole) => {
+    if (!currentUser.isMasterAdmin && currentUser.email.toLowerCase() !== MASTER_ADMIN_EMAIL.toLowerCase()) {
+      return {
+        success: false,
+        error: 'Permission Denied: Only the Supreme Master Admin (josuva732006@gmail.com) can assign or revoke administrative roles.',
+      };
+    }
+
+    setAllUsers((prev) =>
+      prev.map((u) => {
+        if (u.id === userId) {
+          const updated = {
+            ...u,
+            role: newRole,
+            tier: newRole === 'SUPER_ADMIN' ? 'ENTERPRISE' : u.tier,
+          };
+          if (currentUser.id === userId) saveUserSession(updated);
+          return updated;
+        }
+        return u;
+      })
+    );
+    return { success: true };
   };
 
   const upgradePlan = (tier: PlanTier) => {
@@ -193,7 +299,6 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       ...currentUser,
       tier,
       toolCallsLimit: limit,
-      role: tier === 'ENTERPRISE' || tier === 'TEAM' ? 'SUPER_ADMIN' : currentUser.role,
     };
     saveUserSession(updated);
     setAllUsers((prev) => prev.map((u) => (u.id === currentUser.id ? updated : u)));
@@ -203,7 +308,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     setAllUsers((prev) =>
       prev.map((u) => {
         if (u.id === userId) {
-          const suspended = { ...u, isSuspended: true, lastActive: 'Suspended by Admin' };
+          if (u.isMasterAdmin) return u; // Never suspend master admin
+          const suspended = { ...u, isSuspended: true, lastActive: 'Suspended by Master Admin' };
           if (currentUser.id === userId) saveUserSession(suspended);
           return suspended;
         }
@@ -243,7 +349,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
         login,
         register,
         logout,
-        switchRole,
+        promoteUser,
         upgradePlan,
         suspendUser,
         reactivateUser,

@@ -13,29 +13,28 @@ export default function LoginPage() {
   const { login, register } = useAuth();
 
   const [mode, setMode] = useState<'signin' | 'register'>('signin');
-  const [email, setEmail] = useState('elena.rostova@enterprise.corp');
-  const [password, setPassword] = useState('••••••••••••');
-  const [name, setName] = useState('Elena Rostova');
-  const [company, setCompany] = useState('Apex Global Inc.');
-  const [role, setRole] = useState<UserRole>('SUPER_ADMIN');
+  const [email, setEmail] = useState('josuva732006@gmail.com');
+  const [password, setPassword] = useState('josuva/12345');
+  const [name, setName] = useState('Josuva');
+  const [company, setCompany] = useState('SentinelOps Global Command');
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
       if (mode === 'signin') {
-        const result = login(email, role);
+        const result = await login(email, password);
         if (!result.success) {
           setErrorMsg(result.error || 'Authentication failed.');
           setIsLoading(false);
           return;
         }
       } else {
-        const result = register(name, email, company);
+        const result = await register(name, email, company, password);
         if (!result.success) {
           setErrorMsg(result.error || 'Registration failed.');
           setIsLoading(false);
@@ -45,7 +44,10 @@ export default function LoginPage() {
 
       setIsLoading(false);
       router.push('/dashboard');
-    }, 300);
+    } catch {
+      setErrorMsg('Network error connecting to SentinelOps authentication gateway.');
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -189,19 +191,10 @@ export default function LoginPage() {
             />
           </div>
 
-          {mode === 'signin' && (
-            <div>
-              <label className="block text-slate-400 font-semibold mb-1">Access Role Profile</label>
-              <select
-                value={role}
-                onChange={(e) => setRole(e.target.value as UserRole)}
-                className="w-full rounded-xl border bg-black/40 px-3.5 py-2.5 text-white focus:outline-none"
-                style={{ borderColor: currentTheme.surfaceBorder }}
-              >
-                <option value="SUPER_ADMIN">Super Administrator (Full Admin Center & Kill-Switch)</option>
-                <option value="SECOPS_ARCHITECT">SecOps Architect (Policy & In-Line Config)</option>
-                <option value="DEVELOPER">Developer / Operator (Free Tier Fleet Explorer)</option>
-              </select>
+          {mode === 'signin' && email.trim().toLowerCase() === 'josuva732006@gmail.com' && (
+            <div className="p-3 rounded-xl border border-amber-500/40 bg-amber-500/10 text-amber-300 text-xs flex items-center gap-2">
+              <span className="text-sm">👑</span>
+              <span className="font-semibold">Supreme Master Admin Account Recognized</span>
             </div>
           )}
 
