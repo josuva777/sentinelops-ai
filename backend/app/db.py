@@ -251,3 +251,4 @@ def set_user_suspension(user_id: str, suspend: bool, requesting_user: Dict[str, 
     conn.commit()
     conn.close()
     return True
+

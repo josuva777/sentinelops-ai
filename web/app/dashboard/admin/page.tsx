@@ -447,9 +447,13 @@ export default function AdminPage() {
 
       {/* ISSUE KEY MODAL */}
       {showKeyModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/75 backdrop-blur-sm">
+        <div
+          onClick={() => setShowKeyModal(false)}
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm p-4 sm:p-6 flex min-h-full items-center justify-center animate-in fade-in duration-200"
+        >
           <div
-            className="w-full max-w-md rounded-2xl border p-6 shadow-2xl space-y-4"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-md rounded-2xl border p-5 sm:p-6 shadow-2xl space-y-4 my-auto max-h-[90vh] overflow-y-auto"
             style={{
               backgroundColor: currentTheme.surface,
               borderColor: currentTheme.surfaceBorder,

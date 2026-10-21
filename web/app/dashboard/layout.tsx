@@ -376,9 +376,13 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
 
       {/* UPGRADE PLAN MODAL */}
       {showUpgradeModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div
+          onClick={() => setShowUpgradeModal(false)}
+          className="fixed inset-0 z-50 overflow-y-auto bg-black/80 backdrop-blur-sm p-4 sm:p-6 flex min-h-full items-center justify-center animate-in fade-in duration-200"
+        >
           <div
-            className="w-full max-w-lg rounded-2xl border p-6 sm:p-8 shadow-2xl relative space-y-6"
+            onClick={(e) => e.stopPropagation()}
+            className="w-full max-w-lg rounded-2xl border p-5 sm:p-6 shadow-2xl relative my-auto max-h-[90vh] flex flex-col space-y-4"
             style={{
               backgroundColor: currentTheme.surface,
               borderColor: currentTheme.surfaceBorder,
@@ -387,7 +391,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           >
             <button
               onClick={() => setShowUpgradeModal(false)}
-              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg"
+              className="absolute top-4 right-4 text-slate-400 hover:text-white p-1 rounded-lg transition-colors"
             >
               <X className="w-5 h-5" />
             </button>

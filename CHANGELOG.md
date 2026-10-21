@@ -5,6 +5,13 @@ All notable changes to the SentinelOps AI platform will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.3.1] - 2026-10-21
+
+### Fixed
+- **React Portal Mounting for Desktop Modal**: Switched `InstallDesktopApp` modal to mount via `createPortal(..., document.body)` with `z-[9999]`, breaking out of parent `<header>` `backdrop-blur-md` containing block constraints and preventing modal vertical cutoff.
+- **Deduplicated APK Actions**: Removed redundant `Web APK` button from Navbar and Hero section; preserved `web.apk` as a dedicated action inside the "Get Desktop App" modal alongside PWA and Windows `.bat` options.
+- **Responsive Viewport Centering**: Added backdrop click-to-close dismiss behavior and internal `overflow-y-auto` scrolling on laptop (1366x768) viewports.
+
 ## [1.3.0] - 2026-10-21
 
 ### Added
