@@ -1,5 +1,5 @@
 import React from 'react';
-import { AbsoluteFill, Sequence, useVideoConfig, interpolate, spring, useCurrentFrame, staticFile, Audio } from 'remotion';
+import { AbsoluteFill, Sequence, useVideoConfig, interpolate, spring, useCurrentFrame, staticFile, Audio, Img } from 'remotion';
 import { CommercialProps } from './types';
 
 export const Commercial: React.FC<CommercialProps> = ({
@@ -67,8 +67,9 @@ export const Commercial: React.FC<CommercialProps> = ({
         </div>
       </div>
 
-      {/* AUDIO ENGINE: DYNAMIC SYNTH PULSE + TIMED SOUND EFFECTS */}
-      <Audio src={staticFile('audio/bg_cyber_pulse.wav')} volume={0.75} />
+      {/* AUDIO ENGINE: DYNAMIC SYNTH PULSE + TIMED SOUND EFFECTS + NEURAL VOICEOVER */}
+      <Audio src={staticFile('audio/bg_cyber_pulse.wav')} volume={0.35} />
+      <Audio src={staticFile('audio/voice_commercial.mp3')} volume={1.0} />
       
       {/* SFX: Threat Alarm at frame 30 */}
       <Sequence from={30} durationInFrames={60}>
@@ -499,6 +500,15 @@ function Scene5LedgerAndCTA({ frame, primaryColor, accentColor }: { frame: numbe
 
   return (
     <AbsoluteFill style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '0 80px', transform: `scale(${scale})`, opacity, textAlign: 'center' }}>
+      <Img
+        src={staticFile('branding/shield_emblem.png')}
+        style={{
+          width: 100,
+          height: 100,
+          marginBottom: 16,
+          filter: `drop-shadow(0 0 25px ${primaryColor})`,
+        }}
+      />
       <div style={{ display: 'inline-flex', alignItems: 'center', gap: '8px', padding: '6px 16px', borderRadius: '999px', backgroundColor: `${primaryColor}20`, border: `1px solid ${primaryColor}40`, color: primaryColor, fontFamily: 'monospace', fontSize: '13px', fontWeight: 700, marginBottom: '20px' }}>
         <span>SHA-256 CRYPTOGRAPHIC PROOF VERIFIED</span>
       </div>

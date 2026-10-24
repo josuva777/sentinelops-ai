@@ -1,0 +1,329 @@
+[
+  {
+    "sentence": "Autonomous AI agents are executing real actions in production.",
+    "start": 0.1,
+    "end": 4.535,
+    "words": [
+      {
+        "word": "Autonomous",
+        "start": 0.1,
+        "end": 0.593
+      },
+      {
+        "word": "AI",
+        "start": 0.593,
+        "end": 1.086
+      },
+      {
+        "word": "agents",
+        "start": 1.086,
+        "end": 1.578
+      },
+      {
+        "word": "are",
+        "start": 1.578,
+        "end": 2.071
+      },
+      {
+        "word": "executing",
+        "start": 2.071,
+        "end": 2.564
+      },
+      {
+        "word": "real",
+        "start": 2.564,
+        "end": 3.057
+      },
+      {
+        "word": "actions",
+        "start": 3.057,
+        "end": 3.55
+      },
+      {
+        "word": "in",
+        "start": 3.55,
+        "end": 4.042
+      },
+      {
+        "word": "production.",
+        "start": 4.042,
+        "end": 4.535
+      }
+    ]
+  },
+  {
+    "sentence": "Moving capital.",
+    "start": 4.485,
+    "end": 6.446,
+    "words": [
+      {
+        "word": "Moving",
+        "start": 4.485,
+        "end": 5.466
+      },
+      {
+        "word": "capital.",
+        "start": 5.466,
+        "end": 6.446
+      }
+    ]
+  },
+  {
+    "sentence": "Altering databases.",
+    "start": 6.446,
+    "end": 8.627,
+    "words": [
+      {
+        "word": "Altering",
+        "start": 6.446,
+        "end": 7.537
+      },
+      {
+        "word": "databases.",
+        "start": 7.537,
+        "end": 8.627
+      }
+    ]
+  },
+  {
+    "sentence": "Accessing private infrastructure.",
+    "start": 8.627,
+    "end": 11.458,
+    "words": [
+      {
+        "word": "Accessing",
+        "start": 8.627,
+        "end": 9.571
+      },
+      {
+        "word": "private",
+        "start": 9.571,
+        "end": 10.515
+      },
+      {
+        "word": "infrastructure.",
+        "start": 10.515,
+        "end": 11.458
+      }
+    ]
+  },
+  {
+    "sentence": "When an agent goes rogue, post-execution logs are too late.",
+    "start": 11.458,
+    "end": 15.662,
+    "words": [
+      {
+        "word": "When",
+        "start": 11.458,
+        "end": 11.879
+      },
+      {
+        "word": "an",
+        "start": 11.879,
+        "end": 12.299
+      },
+      {
+        "word": "agent",
+        "start": 12.299,
+        "end": 12.719
+      },
+      {
+        "word": "goes",
+        "start": 12.719,
+        "end": 13.14
+      },
+      {
+        "word": "rogue,",
+        "start": 13.14,
+        "end": 13.56
+      },
+      {
+        "word": "post-execution",
+        "start": 13.56,
+        "end": 13.98
+      },
+      {
+        "word": "logs",
+        "start": 13.98,
+        "end": 14.401
+      },
+      {
+        "word": "are",
+        "start": 14.401,
+        "end": 14.821
+      },
+      {
+        "word": "too",
+        "start": 14.821,
+        "end": 15.241
+      },
+      {
+        "word": "late.",
+        "start": 15.241,
+        "end": 15.662
+      }
+    ]
+  },
+  {
+    "sentence": "SentinelOps AI delivers deterministic in-line guardrails.",
+    "start": 15.662,
+    "end": 19.951,
+    "words": [
+      {
+        "word": "SentinelOps",
+        "start": 15.662,
+        "end": 16.377
+      },
+      {
+        "word": "AI",
+        "start": 16.377,
+        "end": 17.092
+      },
+      {
+        "word": "delivers",
+        "start": 17.092,
+        "end": 17.806
+      },
+      {
+        "word": "deterministic",
+        "start": 17.806,
+        "end": 18.521
+      },
+      {
+        "word": "in-line",
+        "start": 18.521,
+        "end": 19.236
+      },
+      {
+        "word": "guardrails.",
+        "start": 19.236,
+        "end": 19.951
+      }
+    ]
+  },
+  {
+    "sentence": "Mathematical policy enforcement.",
+    "start": 19.951,
+    "end": 22.855,
+    "words": [
+      {
+        "word": "Mathematical",
+        "start": 19.951,
+        "end": 20.919
+      },
+      {
+        "word": "policy",
+        "start": 20.919,
+        "end": 21.887
+      },
+      {
+        "word": "enforcement.",
+        "start": 21.887,
+        "end": 22.855
+      }
+    ]
+  },
+  {
+    "sentence": "Zero LLM hallucinations.",
+    "start": 22.855,
+    "end": 25.65,
+    "words": [
+      {
+        "word": "Zero",
+        "start": 22.855,
+        "end": 23.787
+      },
+      {
+        "word": "LLM",
+        "start": 23.787,
+        "end": 24.718
+      },
+      {
+        "word": "hallucinations.",
+        "start": 24.718,
+        "end": 25.65
+      }
+    ]
+  },
+  {
+    "sentence": "Cryptographic human authorization for high-risk actions.",
+    "start": 25.65,
+    "end": 29.571,
+    "words": [
+      {
+        "word": "Cryptographic",
+        "start": 25.65,
+        "end": 26.303
+      },
+      {
+        "word": "human",
+        "start": 26.303,
+        "end": 26.957
+      },
+      {
+        "word": "authorization",
+        "start": 26.957,
+        "end": 27.61
+      },
+      {
+        "word": "for",
+        "start": 27.61,
+        "end": 28.264
+      },
+      {
+        "word": "high-risk",
+        "start": 28.264,
+        "end": 28.917
+      },
+      {
+        "word": "actions.",
+        "start": 28.917,
+        "end": 29.571
+      }
+    ]
+  },
+  {
+    "sentence": "SentinelOps AI.",
+    "start": 29.571,
+    "end": 31.801,
+    "words": [
+      {
+        "word": "SentinelOps",
+        "start": 29.571,
+        "end": 30.686
+      },
+      {
+        "word": "AI.",
+        "start": 30.686,
+        "end": 31.801
+      }
+    ]
+  },
+  {
+    "sentence": "Guardrails that actually enforce.",
+    "start": 31.801,
+    "end": 34.522,
+    "words": [
+      {
+        "word": "Guardrails",
+        "start": 31.801,
+        "end": 32.482
+      },
+      {
+        "word": "that",
+        "start": 32.482,
+        "end": 33.162
+      },
+      {
+        "word": "actually",
+        "start": 33.162,
+        "end": 33.842
+      },
+      {
+        "word": "enforce.",
+        "start": 33.842,
+        "end": 34.522
+      }
+    ]
+  }
+]

@@ -3,6 +3,7 @@ import './globals.css';
 import { ThemeProvider } from '../lib/themeContext';
 import { OperationsProvider } from '../lib/operationsContext';
 import { AuthProvider } from '../lib/authContext';
+import { SmoothScroll } from '../components/SmoothScroll';
 
 export const metadata = {
   title: 'SentinelOps AI — Deterministic In-Line Guardrails for AI Agents',
@@ -25,7 +26,9 @@ export default function RootLayout({
         <ThemeProvider>
           <AuthProvider>
             <OperationsProvider>
-              {children}
+              <SmoothScroll>
+                {children}
+              </SmoothScroll>
             </OperationsProvider>
           </AuthProvider>
         </ThemeProvider>
