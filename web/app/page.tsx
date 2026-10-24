@@ -382,99 +382,53 @@ export default function HomePage() {
             <div className="flex flex-col md:flex-row md:items-end justify-between mb-8 gap-4">
               <div>
                 <span className="text-xs font-mono font-bold tracking-wider uppercase" style={{ color: currentTheme.primary }}>
-                  Multi-Format Commercial & Social Studio
+                  Commercial Production & Walkthrough
                 </span>
                 <h2 className="text-2xl sm:text-4xl font-extrabold text-white mt-1">
                   SentinelOps AI in Action
                 </h2>
                 <p className="text-sm text-slate-400 mt-2 max-w-2xl">
-                  Broadcast-grade 60fps productions rendered with neural voiceover, precision Foley SFX, and real console telemetry.
-                  Available in 16:9 Widescreen and 9:16 Viral Social Storytelling Reel.
+                  Broadcast-grade 1080p 60fps render produced with Remotion. Demonstrates agent tool call interception,
+                  AST parameter constraints, neural voiceover, and the cryptographic approval lifecycle.
                 </p>
               </div>
 
-              {/* Video Format Downloads */}
-              <div className="flex items-center gap-2">
-                <a
-                  href="/sentinelops_commercial.mp4"
-                  download="sentinelops_commercial.mp4"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-xs font-mono font-semibold transition-colors hover:bg-white/10"
-                  style={{ borderColor: currentTheme.surfaceBorder, color: currentTheme.accent }}
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>16:9 MP4</span>
-                </a>
-                <a
-                  href="/sentinelops_viral_reel.mp4"
-                  download="sentinelops_viral_reel.mp4"
-                  className="inline-flex items-center gap-1.5 px-3.5 py-2 rounded-lg border text-xs font-mono font-semibold transition-colors hover:bg-white/10"
-                  style={{ borderColor: currentTheme.surfaceBorder, color: currentTheme.primary }}
-                >
-                  <Download className="w-3.5 h-3.5" />
-                  <span>9:16 Reel MP4</span>
-                </a>
-              </div>
+              <a
+                href="/sentinelops_commercial.mp4"
+                download="sentinelops_commercial.mp4"
+                className="inline-flex items-center gap-2 px-4 py-2.5 rounded-lg border text-xs font-mono font-semibold transition-colors hover:bg-white/10"
+                style={{ borderColor: currentTheme.surfaceBorder, color: currentTheme.accent }}
+              >
+                <Download className="w-4 h-4" />
+                <span>Download Broadcast MP4 Video</span>
+              </a>
             </div>
 
-            {/* Video Player Grid: 16:9 Widescreen & 9:16 Vertical Reel */}
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-8 items-start">
-              {/* 16:9 Landscape Broadcast Spot */}
-              <div
-                className="lg:col-span-2 rounded-2xl border overflow-hidden p-2 shadow-2xl relative"
-                style={{
-                  borderColor: currentTheme.surfaceBorder,
-                  backgroundColor: currentTheme.surface,
-                  boxShadow: `0 25px 50px -12px rgba(0,0,0,0.8), 0 0 30px -8px ${currentTheme.glow}`,
-                }}
-              >
-                <div className="relative aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center">
-                  <video
-                    controls
-                    preload="metadata"
-                    className="w-full h-full object-contain"
-                  >
-                    <source src="/sentinelops_commercial.mp4" type="video/mp4" />
-                    Your browser does not support HTML5 video playback.
-                  </video>
-                </div>
-                <div className="p-3 flex items-center justify-between text-xs font-mono text-slate-400">
-                  <div className="flex items-center gap-2">
-                    <span className="w-2 h-2 rounded-full" style={{ backgroundColor: currentTheme.primary }} />
-                    <span>16:9 Landscape Broadcast Master (1920x1080 @ 60 FPS)</span>
-                  </div>
-                  <span>Neural Voiceover + Foley SFX</span>
-                </div>
+            {/* Video Player Card (16:9 Landscape Broadcast Master) */}
+            <div
+              className="rounded-2xl border overflow-hidden p-2 shadow-2xl relative"
+              style={{
+                borderColor: currentTheme.surfaceBorder,
+                backgroundColor: currentTheme.surface,
+                boxShadow: `0 25px 50px -12px rgba(0,0,0,0.8), 0 0 30px -8px ${currentTheme.glow}`,
+              }}
+            >
+              <div className="relative aspect-video rounded-xl overflow-hidden bg-black flex items-center justify-center">
+                <video
+                  controls
+                  preload="metadata"
+                  className="w-full h-full object-contain"
+                >
+                  <source src="/sentinelops_commercial.mp4" type="video/mp4" />
+                  Your browser does not support HTML5 video playback.
+                </video>
               </div>
-
-              {/* 9:16 Viral Social Tech Storytelling Reel */}
-              <div
-                className="rounded-2xl border overflow-hidden p-3 shadow-2xl relative flex flex-col items-center"
-                style={{
-                  borderColor: currentTheme.surfaceBorder,
-                  backgroundColor: currentTheme.surface,
-                  boxShadow: `0 25px 50px -12px rgba(0,0,0,0.8), 0 0 30px -8px ${currentTheme.glow}`,
-                }}
-              >
-                <div className="w-full flex items-center justify-between text-xs font-mono mb-2 text-slate-300">
-                  <span className="font-bold flex items-center gap-1.5" style={{ color: currentTheme.primary }}>
-                    <span className="w-2 h-2 rounded-full animate-ping bg-emerald-400" />
-                    Viral Reel / Shorts
-                  </span>
-                  <span className="text-[11px] text-slate-400">9:16 Vertical</span>
+              <div className="p-3 flex items-center justify-between text-xs font-mono text-slate-400">
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full" style={{ backgroundColor: currentTheme.primary }} />
+                  <span>Resolution: 1920x1080 @ 60 FPS</span>
                 </div>
-                <div className="relative w-full max-w-[280px] aspect-[9/16] rounded-xl overflow-hidden bg-black border border-slate-800 shadow-inner">
-                  <video
-                    controls
-                    preload="metadata"
-                    className="w-full h-full object-cover"
-                  >
-                    <source src="/sentinelops_viral_reel.mp4" type="video/mp4" />
-                    Your browser does not support HTML5 video playback.
-                  </video>
-                </div>
-                <div className="w-full pt-3 text-center text-xs font-mono text-slate-400">
-                  TikTok / Instagram Reels / YouTube Shorts
-                </div>
+                <span>Neural Voiceover + Foley SFX | H.264 Master</span>
               </div>
             </div>
           </div>
