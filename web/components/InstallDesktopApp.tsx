@@ -78,14 +78,14 @@ exit
 
         <div className="flex items-center gap-3">
           <div
-            className="w-10 h-10 rounded-xl border flex items-center justify-center shadow-md shrink-0"
+            className="w-10 h-10 rounded-xl border flex items-center justify-center shadow-md shrink-0 overflow-hidden p-0.5"
             style={{
               backgroundColor: currentTheme.badgeBg,
               borderColor: currentTheme.surfaceBorder,
               color: currentTheme.primary,
             }}
           >
-            <Monitor className="w-5 h-5" />
+            <img src="/branding/app_icon.png" alt="SentinelOps App Icon" className="w-full h-full object-contain rounded-lg" />
           </div>
           <div>
             <h3 className="text-base font-bold text-white">SentinelOps AI Desktop & Mobile Apps</h3>

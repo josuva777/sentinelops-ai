@@ -4,13 +4,13 @@
   "build_type": "release-signed",
   "package_name": "ai.sentinelops.mobile",
   "file_name": "sentinelops-mobile.apk",
-  "sha256": "741A39305F88D1FEAE02831D46E9DF75F6AFAD7D09EAD72C3D6BB1A811F3075B",
-  "size_bytes": 16930,
+  "sha256": "A837FD0A1E4491A8846970404FB64DB2EC8E6B2DA9D3CA7C0E59EDA01D526DB0",
+  "size_bytes": 78370,
   "verified": true,
   "schemes": [
     "v1",
     "v2",
     "v3"
   ],
-  "timestamp": "2026-10-21T16:25:28.890511"
+  "timestamp": "2026-10-24T13:52:55.295480"
 }

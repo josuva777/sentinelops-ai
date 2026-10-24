@@ -35,7 +35,9 @@ def build_real_apk():
     print("[*] Building 100% Genuine Android Native APK via Android SDK")
     print("==========================================================")
 
-    work_dir = r"D:\sentinelops-ai\mobile\real_apk_build"
+    root_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+    mobile_dir = os.path.join(root_dir, "mobile")
+    work_dir = os.path.join(mobile_dir, "real_apk_build")
     if os.path.exists(work_dir):
         shutil.rmtree(work_dir)
     os.makedirs(work_dir, exist_ok=True)
@@ -52,7 +54,9 @@ def build_real_apk():
     os.makedirs(mipmap_dir, exist_ok=True)
 
     # 1. Copy app icon
-    icon_source = r"D:\sentinelops-ai\mobile\assets\icon.png"
+    icon_source = os.path.join(root_dir, "web", "public", "branding", "app_icon.png")
+    if not os.path.exists(icon_source):
+        icon_source = os.path.join(mobile_dir, "assets", "icon.png")
     if os.path.exists(icon_source):
         shutil.copy(icon_source, os.path.join(mipmap_dir, "ic_launcher.png"))
         shutil.copy(icon_source, os.path.join(drawable_dir, "app_icon.png"))
@@ -248,14 +252,14 @@ public class MainActivity extends Activity {
 
     # Copy to all target directories
     targets = [
-        r"D:\sentinelops-ai\releases\sentinelops-mobile.apk",
-        r"D:\sentinelops-ai\releases\mobile.apk",
-        r"D:\sentinelops-ai\releases\web.apk",
-        r"D:\sentinelops-ai\releases\sentinelops-web.apk",
-        r"D:\sentinelops-ai\web\public\downloads\sentinelops-mobile.apk",
-        r"D:\sentinelops-ai\web\public\downloads\mobile.apk",
-        r"D:\sentinelops-ai\web\public\downloads\web.apk",
-        r"D:\sentinelops-ai\web\public\downloads\sentinelops-web.apk",
+        os.path.join(root_dir, "releases", "sentinelops-mobile.apk"),
+        os.path.join(root_dir, "releases", "mobile.apk"),
+        os.path.join(root_dir, "releases", "web.apk"),
+        os.path.join(root_dir, "releases", "sentinelops-web.apk"),
+        os.path.join(root_dir, "web", "public", "downloads", "sentinelops-mobile.apk"),
+        os.path.join(root_dir, "web", "public", "downloads", "mobile.apk"),
+        os.path.join(root_dir, "web", "public", "downloads", "web.apk"),
+        os.path.join(root_dir, "web", "public", "downloads", "sentinelops-web.apk"),
         r"C:\Users\ELCOT\OneDrive\Desktop\sentinelops-mobile.apk",
         r"C:\Users\ELCOT\OneDrive\Desktop\web.apk",
     ]
@@ -278,7 +282,7 @@ public class MainActivity extends Activity {
         "schemes": ["v1", "v2", "v3"],
         "timestamp": datetime.utcnow().isoformat()
     }
-    with open(r"D:\sentinelops-ai\releases\LATEST_RELEASE.json", "w", encoding="utf-8") as f:
+    with open(os.path.join(root_dir, "releases", "LATEST_RELEASE.json"), "w", encoding="utf-8") as f:
         json.dump(manifest, f, indent=2)
 
 if __name__ == "__main__":

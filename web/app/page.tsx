@@ -116,6 +116,29 @@ export default function HomePage() {
           <ParticleCanvas />
 
           <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 relative z-10 text-center">
+            {/* Official Brand Logo Emblem */}
+            <motion.div
+              initial={{ opacity: 0, scale: 0.8 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="flex justify-center mb-6"
+            >
+              <div
+                className="relative inline-flex items-center justify-center p-3 rounded-2xl border transition-all duration-300 backdrop-blur-sm"
+                style={{
+                  backgroundColor: `${currentTheme.surface}c0`,
+                  borderColor: currentTheme.surfaceBorder,
+                  boxShadow: `0 0 35px -5px ${currentTheme.glow}`,
+                }}
+              >
+                <img
+                  src="/branding/shield_emblem.png"
+                  alt="SentinelOps AI Guardrails"
+                  className="h-20 sm:h-24 w-auto object-contain"
+                />
+              </div>
+            </motion.div>
+
             {/* Live badge */}
             <motion.div
               initial={{ opacity: 0, y: -10 }}

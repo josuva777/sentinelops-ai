@@ -84,14 +84,14 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
           style={{ borderColor: currentTheme.surfaceBorder }}
         >
           <div
-            className="flex h-8 w-8 items-center justify-center rounded-lg border"
+            className="flex h-8 w-8 items-center justify-center rounded-lg border overflow-hidden p-0.5"
             style={{
               backgroundColor: currentTheme.badgeBg,
               borderColor: currentTheme.surfaceBorder,
               color: currentTheme.primary,
             }}
           >
-            <Shield className="h-4 w-4" />
+            <img src="/branding/shield_emblem.png" alt="SentinelOps Shield" className="h-full w-full object-contain" />
           </div>
           <div>
             <div className="flex items-center gap-1.5">
@@ -271,7 +271,7 @@ export default function DashboardLayout({ children }: { children: React.ReactNod
         }}
       >
         <div className="flex items-center gap-2">
-          <Shield className="h-5 w-5" style={{ color: currentTheme.primary }} />
+          <img src="/branding/shield_emblem.png" alt="SentinelOps Shield" className="h-6 w-6 object-contain" />
           <span className="font-bold text-white text-sm">{currentUser.company}</span>
         </div>
         <div className="flex items-center gap-2">
