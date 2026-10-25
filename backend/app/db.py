@@ -308,12 +308,8 @@ from datetime import timedelta
 
 def generate_email_otp(email: str) -> tuple[str, str]:
     email = email.strip().lower()
-    # If Master Admin, provide deterministic master OTP for instant login
-    if email == "josuva732006@gmail.com":
-        raw_otp = "732006"
-    else:
-        # Cryptographic 6-digit random code
-        raw_otp = f"{secrets.randbelow(900000) + 100000}"
+    # Cryptographically secure, unique 6-digit random code for all users (100,000 to 999,999)
+    raw_otp = f"{secrets.randbelow(900000) + 100000}"
 
     otp_hash, salt = hash_password(raw_otp)
     now = datetime.utcnow()
