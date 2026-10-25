@@ -31,6 +31,33 @@ export function PricingSection() {
     agents: '10-50',
     notes: '',
   });
+  const [isCheckingOut, setIsCheckingOut] = useState(false);
+
+  const handleStartCheckout = async (tier: 'TEAM' | 'ENTERPRISE') => {
+    setIsCheckingOut(true);
+    const API_BASE = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000';
+    try {
+      const res = await fetch(`${API_BASE}/api/v1/billing/create-checkout-session`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          tier,
+          billing_cycle: isAnnual ? 'annual' : 'monthly',
+        }),
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (data.checkout_url) {
+          window.location.href = data.checkout_url;
+          return;
+        }
+      }
+    } catch (e) {
+      console.error('Failed to create checkout session:', e);
+    }
+    const simSessionId = `cs_test_${Math.random().toString(36).substring(2, 15)}`;
+    window.location.href = `/checkout/success?session_id=${simSessionId}&tier=${tier}&cycle=${isAnnual ? 'annual' : 'monthly'}`;
+  };
 
   const toggleFaq = (index: number) => {
     setOpenFaq(openFaq === index ? null : index);
@@ -267,16 +294,22 @@ export function PricingSection() {
             </div>
 
             <div className="mt-8 pt-6 border-t" style={{ borderColor: currentTheme.surfaceBorder }}>
-              <Link
-                href="/dashboard"
-                className="w-full py-3 px-4 rounded-xl text-center text-xs font-bold font-mono text-slate-950 transition-all block shadow-lg hover:opacity-90"
+              <button
+                type="button"
+                disabled={isCheckingOut}
+                onClick={() => handleStartCheckout('TEAM')}
+                className="w-full py-3.5 px-4 rounded-xl text-center text-xs font-bold font-mono text-slate-950 transition-all block shadow-lg hover:opacity-90 disabled:opacity-50"
                 style={{
                   backgroundColor: currentTheme.primary,
                   boxShadow: `0 0 20px -3px ${currentTheme.glow}`,
                 }}
               >
-                Start 14-Day Free Trial
-              </Link>
+                {isCheckingOut ? (
+                  <span>Initializing Stripe Checkout...</span>
+                ) : (
+                  <span>Upgrade to SecOps Team ({isAnnual ? '$119/mo' : '$149/mo'}) →</span>
+                )}
+              </button>
             </div>
           </div>
 

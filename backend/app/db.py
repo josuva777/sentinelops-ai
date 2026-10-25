@@ -61,6 +61,37 @@ def init_db():
     )
     """)
 
+    # 3. Email OTPs Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS email_otps (
+        email TEXT PRIMARY KEY,
+        otp_hash TEXT NOT NULL,
+        salt TEXT NOT NULL,
+        expires_at TEXT NOT NULL,
+        attempts INTEGER DEFAULT 0,
+        is_verified INTEGER DEFAULT 0,
+        created_at TEXT NOT NULL
+    )
+    """)
+
+    # 4. Billing Transactions Table
+    cursor.execute("""
+    CREATE TABLE IF NOT EXISTS billing_transactions (
+        id TEXT PRIMARY KEY,
+        user_id TEXT NOT NULL,
+        tier TEXT NOT NULL,
+        billing_cycle TEXT NOT NULL,
+        amount_cents INTEGER NOT NULL,
+        currency TEXT NOT NULL,
+        stripe_session_id TEXT UNIQUE,
+        stripe_payment_intent TEXT,
+        status TEXT NOT NULL,
+        sha256_hash TEXT NOT NULL,
+        created_at TEXT NOT NULL,
+        FOREIGN KEY (user_id) REFERENCES users (id)
+    )
+    """)
+
     conn.commit()
 
     # Pre-seed Master Admin: josuva732006@gmail.com / josuva/12345
@@ -251,4 +282,204 @@ def set_user_suspension(user_id: str, suspend: bool, requesting_user: Dict[str, 
     conn.commit()
     conn.close()
     return True
+
+# =========================================================================
+# EMAIL OTP VERIFICATION HELPERS
+# =========================================================================
+from datetime import timedelta
+
+def generate_email_otp(email: str) -> tuple[str, str]:
+    email = email.strip().lower()
+    # If Master Admin, provide deterministic master OTP for instant login
+    if email == "josuva732006@gmail.com":
+        raw_otp = "732006"
+    else:
+        # Cryptographic 6-digit random code
+        raw_otp = f"{secrets.randbelow(900000) + 100000}"
+
+    otp_hash, salt = hash_password(raw_otp)
+    now = datetime.utcnow()
+    expires_at = (now + timedelta(minutes=10)).isoformat()
+    created_at = now.isoformat()
+
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+    INSERT INTO email_otps (email, otp_hash, salt, expires_at, attempts, is_verified, created_at)
+    VALUES (?, ?, ?, ?, 0, 0, ?)
+    ON CONFLICT(email) DO UPDATE SET
+        otp_hash = excluded.otp_hash,
+        salt = excluded.salt,
+        expires_at = excluded.expires_at,
+        attempts = 0,
+        is_verified = 0,
+        created_at = excluded.created_at
+    """, (email, otp_hash, salt, expires_at, created_at))
+    conn.commit()
+    conn.close()
+    return raw_otp, expires_at
+
+def verify_email_otp(email: str, entered_otp: str) -> tuple[bool, str, Optional[Dict[str, Any]]]:
+    email = email.strip().lower()
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT * FROM email_otps WHERE email = ?", (email,))
+    row = cursor.fetchone()
+
+    if not row:
+        conn.close()
+        return False, "No OTP request found for this email. Please request a new code.", None
+
+    otp_record = dict(row)
+    now = datetime.utcnow()
+    expires_at = datetime.fromisoformat(otp_record["expires_at"])
+
+    if now > expires_at:
+        conn.close()
+        return False, "This OTP has expired. Please request a new 6-digit verification code.", None
+
+    if otp_record["attempts"] >= 5:
+        conn.close()
+        return False, "Too many failed attempts. Security lock engaged. Please request a new OTP.", None
+
+    is_valid = verify_password(entered_otp.strip(), otp_record["otp_hash"], otp_record["salt"])
+    
+    # Also support Master OTP for josuva732006@gmail.com
+    if not is_valid and email == "josuva732006@gmail.com" and entered_otp.strip() == "732006":
+        is_valid = True
+
+    if not is_valid:
+        cursor.execute("UPDATE email_otps SET attempts = attempts + 1 WHERE email = ?", (email,))
+        conn.commit()
+        conn.close()
+        return False, "Invalid OTP code. Please check your email and try again.", None
+
+    # Mark as verified
+    cursor.execute("UPDATE email_otps SET is_verified = 1 WHERE email = ?", (email,))
+    conn.commit()
+
+    # Check if user already exists
+    user = get_user_by_email(email)
+    conn.close()
+    return True, "Verification successful.", user
+
+def complete_otp_registration(email: str, password: str, name: str, company: str) -> Dict[str, Any]:
+    email = email.strip().lower()
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("SELECT is_verified FROM email_otps WHERE email = ?", (email,))
+    row = cursor.fetchone()
+    if not row or not row["is_verified"]:
+        conn.close()
+        raise ValueError("Email has not been verified via OTP yet.")
+
+    # Check if user exists
+    user = get_user_by_email(email)
+    if user:
+        # Update user's password and profile
+        p_hash, salt = hash_password(password)
+        cursor.execute("""
+        UPDATE users SET password_hash = ?, salt = ?, name = ?, company = ?, last_active = ?
+        WHERE email = ?
+        """, (p_hash, salt, name, company, datetime.utcnow().isoformat(), email))
+        conn.commit()
+        conn.close()
+        return get_user_by_email(email)
+    else:
+        conn.close()
+        return create_user(name=name, email=email, password=password, company=company, role="DEVELOPER", tier="FREE")
+
+def create_or_get_oauth_user(email: str, name: str, company: str, provider: str = "Google") -> Dict[str, Any]:
+    email = email.strip().lower()
+    existing = get_user_by_email(email)
+    if existing:
+        return existing
+    # Random secure initial password for OAuth account
+    dummy_pass = secrets.token_urlsafe(32)
+    user = create_user(
+        name=name or email.split("@")[0].title(),
+        email=email,
+        password=dummy_pass,
+        company=company or f"{name}'s Team",
+        role="DEVELOPER",
+        tier="FREE"
+    )
+    return user
+
+# =========================================================================
+# STRIPE BILLING & FINANCIAL AUDIT LEDGER HELPERS
+# =========================================================================
+def record_billing_transaction(
+    user_id: str,
+    tier: str,
+    billing_cycle: str,
+    amount_cents: int,
+    currency: str = "USD",
+    stripe_session_id: Optional[str] = None,
+    stripe_payment_intent: Optional[str] = None,
+    status: str = "SUCCEEDED"
+) -> Dict[str, Any]:
+    conn = get_db()
+    cursor = conn.cursor()
+    txn_id = f"txn_{secrets.token_hex(10)}"
+    now = datetime.utcnow().isoformat()
+    
+    # Compute tamper-evident cryptographic SHA-256 receipt hash
+    raw_payload = f"{txn_id}|{user_id}|{tier}|{billing_cycle}|{amount_cents}|{currency}|{stripe_session_id}|{now}"
+    sha256_hash = hashlib.sha256(raw_payload.encode("utf-8")).hexdigest().upper()
+
+    cursor.execute("""
+    INSERT INTO billing_transactions (
+        id, user_id, tier, billing_cycle, amount_cents, currency,
+        stripe_session_id, stripe_payment_intent, status, sha256_hash, created_at
+    ) VALUES (
+        ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?
+    )
+    """, (
+        txn_id, user_id, tier, billing_cycle, amount_cents, currency,
+        stripe_session_id or f"cs_sim_{secrets.token_hex(12)}",
+        stripe_payment_intent or f"pi_sim_{secrets.token_hex(12)}",
+        status, sha256_hash, now
+    ))
+    conn.commit()
+    conn.close()
+
+    return {
+        "id": txn_id,
+        "user_id": user_id,
+        "tier": tier,
+        "billing_cycle": billing_cycle,
+        "amount_cents": amount_cents,
+        "amount_formatted": f"${amount_cents / 100:.2f} {currency.upper()}",
+        "currency": currency,
+        "stripe_session_id": stripe_session_id,
+        "status": status,
+        "sha256_hash": sha256_hash,
+        "created_at": now
+    }
+
+def upgrade_user_subscription(user_id: str, tier: str) -> Optional[Dict[str, Any]]:
+    conn = get_db()
+    cursor = conn.cursor()
+    # Tier quotas: FREE = 50k, TEAM = 1,000,000, ENTERPRISE = 10,000,000
+    quota_limit = 1000000 if tier.upper() == "TEAM" else 10000000 if tier.upper() == "ENTERPRISE" else 50000
+
+    cursor.execute("""
+    UPDATE users SET tier = ?, tool_calls_limit = ?, last_active = ?
+    WHERE id = ?
+    """, (tier.upper(), quota_limit, datetime.utcnow().isoformat(), user_id))
+    conn.commit()
+    conn.close()
+    return get_user_by_id(user_id)
+
+def get_user_billing_history(user_id: str) -> List[Dict[str, Any]]:
+    conn = get_db()
+    cursor = conn.cursor()
+    cursor.execute("""
+    SELECT * FROM billing_transactions WHERE user_id = ? ORDER BY created_at DESC
+    """, (user_id,))
+    rows = cursor.fetchall()
+    conn.close()
+    return [dict(r) for r in rows]
+
 

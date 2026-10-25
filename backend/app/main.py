@@ -165,8 +165,28 @@ from app.db import (
     verify_password,
     update_user_role,
     set_user_suspension,
+    generate_email_otp,
+    verify_email_otp,
+    complete_otp_registration,
+    create_or_get_oauth_user,
 )
-from app.models import LoginRequest, RegisterRequest, LoginResponse, UserResponse, RoleUpdateRequest
+from app.models import (
+    LoginRequest,
+    RegisterRequest,
+    LoginResponse,
+    UserResponse,
+    RoleUpdateRequest,
+    OTPSendRequest,
+    OTPSendResponse,
+    OTPVerifyRequest,
+    OTPVerifyResponse,
+    OTPFinalizeRequest,
+    OAuthLoginRequest,
+)
+from app.otp_service import send_otp_email
+from app.billing import router as billing_router
+
+app.include_router(billing_router)
 
 DISPOSABLE_DOMAINS = {
     "tempmail.com", "mailinator.com", "10minutemail.com", "guerrillamail.com",
@@ -230,6 +250,94 @@ def register(req: RegisterRequest):
         tier="FREE"
     )
     token = create_session(user["id"])
+    return LoginResponse(success=True, token=token, user=to_user_response(user))
+
+# =========================================================================
+# OMNICHANNEL AUTHENTICATION & EMAIL OTP ENDPOINTS
+# =========================================================================
+
+@app.post("/api/v1/auth/otp/send", response_model=OTPSendResponse)
+def send_otp(req: OTPSendRequest):
+    email = req.email.strip().lower()
+    if "@" not in email:
+        raise HTTPException(status_code=400, detail="Invalid email address format.")
+    domain = email.split("@")[-1]
+    if domain in DISPOSABLE_DOMAINS:
+        raise HTTPException(
+            status_code=400,
+            detail="Anti-Sybil Defense: Disposable or temporary email domains are strictly prohibited."
+        )
+
+    raw_otp, expires_at = generate_email_otp(email)
+    dispatch_res = send_otp_email(email, raw_otp)
+
+    return OTPSendResponse(
+        success=True,
+        message=f"Verification code sent to {email}. Valid for 10 minutes.",
+        recipient=email,
+        dev_otp=dispatch_res.get("dev_otp"),
+    )
+
+@app.post("/api/v1/auth/otp/verify", response_model=OTPVerifyResponse)
+def verify_otp(req: OTPVerifyRequest):
+    email = req.email.strip().lower()
+    is_valid, message, existing_user = verify_email_otp(email, req.code)
+
+    if not is_valid:
+        return OTPVerifyResponse(
+            success=False,
+            is_new_user=False,
+            message=message
+        )
+
+    # If existing user, log them in immediately!
+    if existing_user:
+        token = create_session(existing_user["id"])
+        return OTPVerifyResponse(
+            success=True,
+            is_new_user=False,
+            message="Identity verified. Logging into existing tenant console...",
+            token=token,
+            user=to_user_response(existing_user)
+        )
+
+    # New user: requires setting password and company
+    return OTPVerifyResponse(
+        success=True,
+        is_new_user=True,
+        message="Email successfully verified. Please set your custom password and company name."
+    )
+
+@app.post("/api/v1/auth/otp/finalize", response_model=LoginResponse)
+def finalize_otp_registration(req: OTPFinalizeRequest):
+    try:
+        user = complete_otp_registration(
+            email=req.email,
+            password=req.password,
+            name=req.name,
+            company=req.company
+        )
+        token = create_session(user["id"])
+        return LoginResponse(success=True, token=token, user=to_user_response(user))
+    except Exception as e:
+        raise HTTPException(status_code=400, detail=str(e))
+
+@app.post("/api/v1/auth/oauth/social", response_model=LoginResponse)
+def oauth_social_login(req: OAuthLoginRequest):
+    email = req.email.strip().lower()
+    if "@" not in email:
+        raise HTTPException(status_code=400, detail="Invalid OAuth email.")
+    domain = email.split("@")[-1]
+    if domain in DISPOSABLE_DOMAINS:
+        raise HTTPException(status_code=400, detail="Anti-Sybil: Disposable domains prohibited.")
+
+    user = create_or_get_oauth_user(
+        email=email,
+        name=req.name,
+        company=req.company or f"{req.name}'s Fleet",
+        provider=req.provider
+    )
+    token = create_session(user["id"], device=f"{req.provider} SSO Client")
     return LoginResponse(success=True, token=token, user=to_user_response(user))
 
 @app.get("/api/v1/auth/me", response_model=UserResponse)

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://openapi.vercel.sh/vercel.json",
   "version": 2,
   "framework": "nextjs",
   "cleanUrls": true,
@@ -17,6 +18,19 @@
         {
           "key": "Referrer-Policy",
           "value": "strict-origin-when-cross-origin"
+        },
+        {
+          "key": "Permissions-Policy",
+          "value": "camera=(), microphone=(), geolocation=()"
+        }
+      ]
+    },
+    {
+      "source": "/sentinelops_commercial.mp4",
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
         }
       ]
     }
@@ -24,8 +38,7 @@
   "rewrites": [
     {
       "source": "/api/gateway/:path*",
-      "destination": "https://gateway.sentinelops.ai/api/v1/:path*"
+      "destination": "https://sentinelops-backend.up.railway.app/api/v1/:path*"
     }
   ]
 }
-

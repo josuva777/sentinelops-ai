@@ -117,3 +117,35 @@ class LoginResponse(BaseModel):
 
 class RoleUpdateRequest(BaseModel):
     role: str
+
+class OTPSendRequest(BaseModel):
+    email: str
+
+class OTPSendResponse(BaseModel):
+    success: bool
+    message: str
+    recipient: str
+    dev_otp: Optional[str] = None
+
+class OTPVerifyRequest(BaseModel):
+    email: str
+    code: str
+
+class OTPVerifyResponse(BaseModel):
+    success: bool
+    is_new_user: bool
+    message: str
+    token: Optional[str] = None
+    user: Optional[UserResponse] = None
+
+class OTPFinalizeRequest(BaseModel):
+    email: str
+    password: str
+    name: str
+    company: str
+
+class OAuthLoginRequest(BaseModel):
+    email: str
+    name: str
+    company: Optional[str] = None
+    provider: str = "Google"

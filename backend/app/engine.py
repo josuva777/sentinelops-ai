@@ -219,4 +219,27 @@ class SecurityEngine:
             prev = entry.event_hash
         return True, len(self.audit_ledger), f"All {len(self.audit_ledger)} audit ledger blocks verified unbroken."
 
+    def append_external_audit(self, agent_id: str, tool_name: str, arguments: dict, decision: str, reason: str, severity: str = "medium") -> AuditRecord:
+        """Appends verified external operational or financial transactions into the tamper-evident SHA-256 chain."""
+        timestamp_str = time.strftime("%Y-%m-%d %H:%M:%S UTC", time.gmtime())
+        block_payload = f"{self.latest_hash}:{timestamp_str}:{agent_id}:{tool_name}:{decision}:{reason}"
+        event_hash = hashlib.sha256(block_payload.encode()).hexdigest()
+
+        audit_entry = AuditRecord(
+            id=f"evt_fin_{len(self.audit_ledger) + 1}",
+            timestamp=timestamp_str,
+            event_hash=event_hash,
+            prev_hash=self.latest_hash,
+            agent_id=agent_id,
+            tool_name=tool_name,
+            arguments=arguments,
+            decision=decision,
+            severity=severity,
+            reason_code=f"FINANCIAL_{decision}",
+            trace_id=f"tr_fin_{len(self.audit_ledger) + 1}",
+        )
+        self.audit_ledger.append(audit_entry)
+        self.latest_hash = event_hash
+        return audit_entry
+
 engine = SecurityEngine()
