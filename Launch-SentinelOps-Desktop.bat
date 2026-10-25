@@ -8,7 +8,7 @@ echo ==========================================================
 netstat -ano | findstr ":8000" | findstr "LISTENING" >nul
 if %ERRORLEVEL% NEQ 0 (
     echo [INFO] Starting SentinelOps Backend Gateway...
-    cd /d "D:\sentinelops-ai\backend"
+    cd /d "%~dp0backend"
     start /min "SentinelOps Backend" cmd /c ".venv\Scripts\python.exe -m uvicorn app.main:app --port 8000 --host 127.0.0.1"
     timeout /t 2 /nobreak >nul
 )
@@ -17,7 +17,7 @@ if %ERRORLEVEL% NEQ 0 (
 netstat -ano | findstr ":3000" | findstr "LISTENING" >nul
 if %ERRORLEVEL% NEQ 0 (
     echo [INFO] Starting SentinelOps Web Console...
-    cd /d "D:\sentinelops-ai\web"
+    cd /d "%~dp0web"
     start /min "SentinelOps Web Console" cmd /c "npx next start -p 3000"
     timeout /t 3 /nobreak >nul
 )
