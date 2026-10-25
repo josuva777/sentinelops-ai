@@ -5,6 +5,19 @@ All notable changes to the SentinelOps AI platform will be documented in this fi
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.4.0] - 2026-10-25
+
+### Added
+- **Dedicated Dual-Flow Authentication Architecture**: Separated user onboarding into `/signup` (new user name, company, email, password, and 6-digit OTP verification) and `/login` (returning user sign-in via password or 1-click passwordless code).
+- **Cryptographic 6-Digit Email OTP Verification**: Built-in hardware-entropy random OTP generator (`secrets.randbelow`) producing unique codes per request, validated with salted SHA-256 hashing and single-use 10-minute expiration.
+- **Enterprise Stripe Payment Gateway**: Dual-mode payment processing (live Stripe API + deterministic cryptographic simulator `cs_test_...`) with instant tier upgrading and quota expansion in persistent SQLite.
+- **Tamper-Evident SHA-256 Financial Receipt Ledger**: Every checkout computes a cryptographic SHA-256 receipt block with 1-click ledger copy in `/dashboard/billing`.
+- **Production Cloud Deployment Architecture**: Ready-to-deploy configuration for Vercel (Edge frontend) and Railway (FastAPI backend + persistent SQLite storage volume).
+
+### Fixed
+- **SQLite Concurrency & WAL Mode**: Enabled `PRAGMA journal_mode=WAL` with a 30-second busy timeout and wrapped all database queries in `try ... finally: conn.close()` to eliminate `sqlite3.OperationalError: database is locked`.
+- **Zero Frontend Leakage**: Prohibited leaking raw OTP verification codes over client-side JSON responses. All verification codes are strictly delivered via server-side logs and live SMTP.
+
 ## [1.3.1] - 2026-10-21
 
 ### Fixed
