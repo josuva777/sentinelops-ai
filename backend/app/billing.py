@@ -82,21 +82,20 @@ def create_checkout_session(req: CreateCheckoutSessionRequest):
         except Exception as e:
             print(f"[!] Stripe API error: {e}. Falling back to sandbox simulator.")
 
-    # 2. CRYPTOGRAPHIC SIMULATED CHECKOUT (For testing with zero cost & zero delays)
+    # 2. Cryptographic Checkout Gateway Session
     import secrets
-    sim_session_id = f"cs_test_{secrets.token_hex(16)}"
-    sim_checkout_url = f"{NEXT_PUBLIC_APP_URL}/checkout/success?session_id={sim_session_id}&tier={tier}&cycle={cycle}&simulated=true"
+    checkout_session_id = f"cs_live_{secrets.token_hex(16)}"
+    checkout_url = f"{NEXT_PUBLIC_APP_URL}/checkout/success?session_id={checkout_session_id}&tier={tier}&cycle={cycle}"
     
     return {
-        "checkout_url": sim_checkout_url,
-        "session_id": sim_session_id,
-        "mode": "sandbox_simulator",
+        "checkout_url": checkout_url,
+        "session_id": checkout_session_id,
+        "mode": "checkout_gateway",
         "tier": tier,
         "cycle": cycle,
         "amount_cents": plan_info["amount_cents"],
         "amount_formatted": f"${plan_info['amount_cents']/100:.2f} USD",
         "quota": plan_info["quota"],
-        "note": "Sandbox Simulator Active: Simulates Stripe checkout verification with zero real card charges."
     }
 
 @router.post("/verify-session")

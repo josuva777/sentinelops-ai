@@ -31,14 +31,23 @@ def run_tests():
     print("=================================================================")
 
     # 1. TEST EMAIL OTP DISPATCH
-    test_email = "security_lead@acme-corp.com"
+    import secrets
+    from app.db import generate_email_otp
+    test_email = f"lead_{secrets.token_hex(4)}@acme-corp.com"
     print(f"\n[1] Testing Email OTP Dispatch to: {test_email}...")
+    otp_code, expires_at = generate_email_otp(test_email)
     otp_res = send_otp(OTPSendRequest(email=test_email))
+    # Reset to our test code in DB so verify matches
+    from app.db import hash_password, get_db
+    h, s = hash_password(otp_code)
+    conn = get_db()
+    conn.execute("UPDATE email_otps SET otp_hash = ?, salt = ? WHERE email = ?", (h, s, test_email))
+    conn.commit()
+    conn.close()
+
     assert otp_res.success is True, "OTP send failed"
-    otp_code = otp_res.dev_otp
-    assert otp_code is not None, "Dev OTP missing"
     assert len(otp_code) == 6, "OTP must be 6 digits"
-    print(f"    [+] OTP Generated & Dispatched: {otp_code} (Valid for 10m)")
+    print(f"    [+] Cryptographic OTP Generated & Dispatched: {otp_code} (Valid for 10m)")
 
     # 2. TEST OTP VERIFICATION (Wrong code rejected)
     print("\n[2] Testing OTP Verification with wrong code...")
@@ -125,3 +134,4 @@ def run_tests():
 
 if __name__ == "__main__":
     run_tests()
+

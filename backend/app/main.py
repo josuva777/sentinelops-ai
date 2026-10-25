@@ -273,9 +273,9 @@ def send_otp(req: OTPSendRequest):
 
     return OTPSendResponse(
         success=True,
-        message=f"Verification code sent to {email}. Valid for 10 minutes.",
+        message=f"Verification code sent to {email}. Check your email inbox to proceed.",
         recipient=email,
-        dev_otp=dispatch_res.get("dev_otp"),
+        dev_otp=None,
     )
 
 @app.post("/api/v1/auth/otp/verify", response_model=OTPVerifyResponse)

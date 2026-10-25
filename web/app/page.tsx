@@ -218,7 +218,7 @@ export default function HomePage() {
                 }}
               >
                 <Play className="h-4 w-4" style={{ color: currentTheme.primary }} />
-                <span>Watch Product Demo</span>
+                <span>Watch Commercial Showcase</span>
               </a>
             </motion.div>
 

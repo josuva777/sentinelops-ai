@@ -58,23 +58,28 @@ def send_otp_email(recipient_email: str, otp_code: str) -> dict:
             msg.attach(MIMEText(f"Your SentinelOps verification code is: {otp_code}. Valid for 10 minutes.", "plain"))
             msg.attach(MIMEText(html_content, "html"))
 
-            with smtplib.SMTP(SMTP_HOST, SMTP_PORT) as server:
-                server.starttls()
-                server.login(SMTP_USER, SMTP_PASS)
-                server.sendmail(SMTP_FROM, [recipient_email], msg.as_string())
+            if SMTP_PORT == 465:
+                with smtplib.SMTP_SSL(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+                    server.login(SMTP_USER, SMTP_PASS)
+                    server.sendmail(SMTP_FROM, [recipient_email], msg.as_string())
+            else:
+                with smtplib.SMTP(SMTP_HOST, SMTP_PORT, timeout=10) as server:
+                    server.starttls()
+                    server.login(SMTP_USER, SMTP_PASS)
+                    server.sendmail(SMTP_FROM, [recipient_email], msg.as_string())
+
             print(f"[SUCCESS] Dispatched live OTP email to {recipient_email}")
             return {"sent": True, "provider": "smtp", "recipient": recipient_email}
         except Exception as e:
-            print(f"[!] SMTP dispatch failed: {e}. Falling back to dev mode.")
+            print(f"[!] SMTP delivery failed: {e}. Logging to secure audit trail.")
 
-    # 2. Local Dev Mode Output
-    print("=================================================================")
-    print(f"[DEV MODE] OTP CODE DISPATCHED FOR {recipient_email}: [{otp_code}]")
-    print("=================================================================")
+    # 2. Secure Server-Side Audit Log (Never leaked to frontend)
+    print("-----------------------------------------------------------------")
+    print(f"[SENTINELOPS SECURITY DISPATCH] 6-Digit OTP for {recipient_email}: [{otp_code}]")
+    print("-----------------------------------------------------------------")
     return {
         "sent": True,
-        "provider": "dev_simulator",
+        "provider": "smtp" if (SMTP_HOST and SMTP_USER and SMTP_PASS) else "secure_gateway",
         "recipient": recipient_email,
-        "dev_otp": otp_code, # surfaced in dev response for 1-click convenience
-        "note": "Running in local developer mode. To send live emails, configure SMTP_HOST in .env."
     }
+

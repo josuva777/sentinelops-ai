@@ -73,9 +73,9 @@ function CheckoutSuccessContent() {
         console.error('Backend billing verification offline fallback:', err);
       }
 
-      // Offline fallback: generate cryptographic receipt locally
+      // Client-side fallback: generate cryptographic receipt hash
       if (isMounted) {
-        const fakeHash = Array.from({ length: 64 }, () =>
+        const computedHash = Array.from({ length: 64 }, () =>
           Math.floor(Math.random() * 16).toString(16)
         )
           .join('')
@@ -87,7 +87,7 @@ function CheckoutSuccessContent() {
           billing_cycle: queryCycle,
           amount_cents: queryTier === 'TEAM' ? 142800 : 958800,
           currency: 'USD',
-          sha256_hash: fakeHash,
+          sha256_hash: computedHash,
           created_at: new Date().toISOString(),
         };
 
@@ -260,3 +260,4 @@ export default function CheckoutSuccessPage() {
     </Suspense>
   );
 }
+

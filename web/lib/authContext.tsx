@@ -221,17 +221,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       });
       const data = await res.json();
       if (res.ok && data.success) {
-        return { success: true, dev_otp: data.dev_otp, message: data.message };
+        return { success: true, message: data.message };
       }
       return { success: false, error: data.detail || data.error || 'Failed to dispatch verification email.' };
     } catch {
-      // Offline fallback: generate mock 6-digit OTP
-      const fallbackOtp = Math.floor(100000 + Math.random() * 900000).toString();
-      sessionStorage.setItem(`sentinelops_otp_${trimmed}`, fallbackOtp);
       return {
-        success: true,
-        dev_otp: fallbackOtp,
-        message: `Verification code generated for ${trimmed}. Valid for 10 minutes.`,
+        success: false,
+        error: 'Unable to connect to SentinelOps authentication gateway.',
       };
     }
   };
@@ -269,17 +265,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       }
       return { success: false, error: data.message || data.detail || 'Invalid verification code.' };
     } catch {
-      // Offline check
-      const stored = sessionStorage.getItem(`sentinelops_otp_${trimmed}`);
-      if (code === stored || code === '732006') {
-        const existing = allUsers.find((u) => u.email.toLowerCase() === trimmed);
-        if (existing) {
-          saveUserSession(existing);
-          return { success: true, is_new_user: false, message: 'Identity confirmed.' };
-        }
-        return { success: true, is_new_user: true, message: 'Code verified. Please set password.' };
-      }
-      return { success: false, error: 'Incorrect 6-digit verification code.' };
+      return { success: false, error: 'Authentication gateway unreachable.' };
     }
   };
 
