@@ -84,14 +84,21 @@ export function Navbar() {
           </div>
 
           <Link
-            href="/dashboard"
-            className="flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold text-slate-950 transition-all duration-300 hover:opacity-90 shadow-lg"
+            href="/login"
+            className="hidden sm:block text-xs font-semibold text-slate-300 hover:text-white transition-colors whitespace-nowrap px-2"
+          >
+            Sign In
+          </Link>
+
+          <Link
+            href="/signup"
+            className="flex items-center gap-2 rounded-lg px-4 py-2 text-xs font-bold text-slate-950 transition-all duration-300 hover:opacity-90 shadow-lg whitespace-nowrap"
             style={{
               backgroundColor: currentTheme.primary,
               boxShadow: `0 0 20px -3px ${currentTheme.glow}`,
             }}
           >
-            <span>Launch Console</span>
+            <span>Get Started</span>
             <ArrowRight className="h-3.5 w-3.5" />
           </Link>
         </div>

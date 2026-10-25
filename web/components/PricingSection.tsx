@@ -221,7 +221,7 @@ export function PricingSection() {
 
             <div className="mt-8 pt-6 border-t" style={{ borderColor: currentTheme.surfaceBorder }}>
               <Link
-                href="/dashboard"
+                href="/signup"
                 className="w-full py-3 px-4 rounded-xl border text-center text-xs font-bold font-mono text-white hover:bg-white/5 transition-all block"
                 style={{ borderColor: currentTheme.surfaceBorder }}
               >

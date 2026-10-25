@@ -8,48 +8,39 @@ import {
   ArrowRight,
   Lock,
   Mail,
-  User,
-  Building2,
   AlertOctagon,
   CheckCircle2,
   Github,
+  Loader2,
+  KeyRound,
 } from 'lucide-react';
 import { useTheme } from '../../lib/themeContext';
 import { useAuth } from '../../lib/authContext';
 
-type LoginMode = 'otp' | 'password';
-type OTPStage = 'email' | 'code' | 'finalize';
-
 export default function LoginPage() {
   const router = useRouter();
   const { currentTheme } = useTheme();
-  const { login, sendOTP, verifyOTP, finalizeOTP, oauthLogin } = useAuth();
+  const { login, sendOTP, verifyOTP, oauthLogin } = useAuth();
 
-  // Mode selection: OTP (default) or direct Password
-  const [mode, setMode] = useState<LoginMode>('otp');
+  // Authentication method: Password (standard) or Email Code (OTP)
+  const [authMethod, setAuthMethod] = useState<'password' | 'otp'>('password');
 
-  // Email OTP state
+  // Password sign-in state
   const [email, setEmail] = useState('');
-  const [otpStage, setOtpStage] = useState<OTPStage>('email');
+  const [password, setPassword] = useState('');
+
+  // Email OTP sign-in state
+  const [otpStage, setOtpStage] = useState<'email' | 'code'>('email');
   const [otpCode, setOtpCode] = useState(['', '', '', '', '', '']);
   const [countdown, setCountdown] = useState(60);
   const [isCounting, setIsCounting] = useState(false);
-
-  // New user finalization state
-  const [name, setName] = useState('');
-  const [company, setCompany] = useState('');
-  const [newPassword, setNewPassword] = useState('');
-
-  // Password sign-in state
-  const [passwordEmail, setPasswordEmail] = useState('');
-  const [password, setPassword] = useState('');
 
   // Status and feedback
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const [successMsg, setSuccessMsg] = useState<string | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  // Countdown timer for OTP resend
+  // OTP resend timer
   useEffect(() => {
     let interval: NodeJS.Timeout;
     if (isCounting && countdown > 0) {
@@ -68,7 +59,6 @@ export default function LoginPage() {
     const redirectUri = `${origin}/auth/callback?provider=Google`;
 
     if (!googleClientId) {
-      // Prompt user or use direct Google account email sign-in
       const userGoogleEmail = window.prompt(
         'Enter your Google Workspace or Gmail address to continue with Google OAuth:'
       );
@@ -125,27 +115,54 @@ export default function LoginPage() {
     window.location.href = authUrl;
   };
 
-  // Send 6-Digit OTP to user's real email
-  const handleSendOtp = async (e: React.FormEvent) => {
+  // 1. Standard Password Login
+  const handlePasswordSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
     setIsLoading(true);
 
+    try {
+      const result = await login(email, password);
+      if (!result.success) {
+        setErrorMsg(result.error || 'Incorrect email or password. Please verify your credentials.');
+        setIsLoading(false);
+        return;
+      }
+      setIsLoading(false);
+      router.push('/dashboard');
+    } catch {
+      setErrorMsg('Unable to reach the SentinelOps authentication gateway.');
+      setIsLoading(false);
+    }
+  };
+
+  // 2. Email OTP Sign-In (For passwordless login)
+  const handleSendLoginOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setErrorMsg(null);
+    setSuccessMsg(null);
+
+    if (!email.trim() || !email.includes('@')) {
+      setErrorMsg('Please enter a valid work email address.');
+      return;
+    }
+
+    setIsLoading(true);
     const res = await sendOTP(email);
     setIsLoading(false);
 
     if (res.success) {
-      setSuccessMsg(`We sent a 6-digit verification code to ${email}. Check your inbox and enter the code below.`);
+      setSuccessMsg(`Sign-in code dispatched to ${email}. Check your email inbox.`);
       setOtpStage('code');
       setCountdown(60);
       setIsCounting(true);
     } else {
-      setErrorMsg(res.error || 'Failed to dispatch verification email.');
+      setErrorMsg(res.error || 'Failed to dispatch sign-in code.');
     }
   };
 
-  // Handle OTP digit entry
+  // OTP Digits Handling
   const handleDigitChange = (index: number, val: string) => {
     if (val.length > 1) {
       const pasted = val.slice(0, 6).split('');
@@ -154,7 +171,7 @@ export default function LoginPage() {
         newDigits[i] = char;
       });
       setOtpCode(newDigits);
-      const nextInput = document.getElementById(`otp-input-${Math.min(5, pasted.length)}`);
+      const nextInput = document.getElementById(`login-otp-${Math.min(5, pasted.length)}`);
       nextInput?.focus();
       return;
     }
@@ -164,27 +181,27 @@ export default function LoginPage() {
     setOtpCode(newCode);
 
     if (val && index < 5) {
-      const nextInput = document.getElementById(`otp-input-${index + 1}`);
+      const nextInput = document.getElementById(`login-otp-${index + 1}`);
       nextInput?.focus();
     }
   };
 
   const handleDigitKeyDown = (index: number, e: React.KeyboardEvent) => {
     if (e.key === 'Backspace' && !otpCode[index] && index > 0) {
-      const prevInput = document.getElementById(`otp-input-${index - 1}`);
+      const prevInput = document.getElementById(`login-otp-${index - 1}`);
       prevInput?.focus();
     }
   };
 
-  // Verify OTP
-  const handleVerifyOtp = async (e?: React.FormEvent) => {
-    if (e) e.preventDefault();
+  // Verify Sign-In Code
+  const handleVerifyLoginOtp = async (e: React.FormEvent) => {
+    e.preventDefault();
     setErrorMsg(null);
     setSuccessMsg(null);
 
     const fullCode = otpCode.join('');
     if (fullCode.length !== 6) {
-      setErrorMsg('Please enter all 6 digits of your verification code.');
+      setErrorMsg('Please enter all 6 digits of the sign-in code.');
       return;
     }
 
@@ -194,62 +211,14 @@ export default function LoginPage() {
 
     if (res.success) {
       if (res.is_new_user) {
-        setSuccessMsg('Email verified. Please set your account password and organization to finish setup.');
-        setOtpStage('finalize');
+        // If an unregistered email attempts to login via OTP, redirect them to finish sign up
+        router.push(`/signup?email=${encodeURIComponent(email)}`);
       } else {
-        setSuccessMsg('Authentication confirmed. Entering SentinelOps Console...');
+        setSuccessMsg('Authentication confirmed! Launching console...');
         setTimeout(() => router.push('/dashboard'), 400);
       }
     } else {
-      setErrorMsg(res.error || 'Invalid verification code. Please check your email and try again.');
-    }
-  };
-
-  // Finalize new user registration
-  const handleFinalizeRegistration = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-
-    if (!newPassword || newPassword.length < 8) {
-      setErrorMsg('Password must be at least 8 characters long.');
-      return;
-    }
-
-    setIsLoading(true);
-    const res = await finalizeOTP(
-      email,
-      newPassword,
-      name || email.split('@')[0],
-      company || `${email.split('@')[0]}'s Organization`
-    );
-    setIsLoading(false);
-
-    if (res.success) {
-      setSuccessMsg('Organization workspace initialized! Launching console...');
-      setTimeout(() => router.push('/dashboard'), 400);
-    } else {
-      setErrorMsg(res.error || 'Failed to complete registration.');
-    }
-  };
-
-  // Direct Password Authentication
-  const handlePasswordSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setErrorMsg(null);
-    setIsLoading(true);
-
-    try {
-      const result = await login(passwordEmail, password);
-      if (!result.success) {
-        setErrorMsg(result.error || 'Incorrect email or password.');
-        setIsLoading(false);
-        return;
-      }
-      setIsLoading(false);
-      router.push('/dashboard');
-    } catch {
-      setErrorMsg('Unable to connect to SentinelOps authentication gateway.');
-      setIsLoading(false);
+      setErrorMsg(res.error || 'Invalid code. Please check your email and try again.');
     }
   };
 
@@ -286,14 +255,36 @@ export default function LoginPage() {
             </span>
           </Link>
           <h1 className="text-base font-bold text-white tracking-tight font-sans">
-            Sign In to SentinelOps Console
+            Welcome Back
           </h1>
           <p className="text-xs text-slate-400">
-            Deterministic In-Line Pre-Flight Tool Interception & Governance
+            Sign in to access your enterprise security console
           </p>
         </div>
 
-        {/* Real OAuth Sign-In Buttons */}
+        {/* Clear Top Switcher: Sign In vs Create Account */}
+        <div
+          className="flex p-1 rounded-xl border text-xs"
+          style={{
+            backgroundColor: 'rgba(0,0,0,0.4)',
+            borderColor: currentTheme.surfaceBorder,
+          }}
+        >
+          <button
+            type="button"
+            className="flex-1 py-1.5 rounded-lg text-center font-semibold bg-white/10 text-white shadow transition-all"
+          >
+            Sign In
+          </button>
+          <Link
+            href="/signup"
+            className="flex-1 py-1.5 rounded-lg text-center font-semibold text-slate-400 hover:text-white transition-all"
+          >
+            Create Account
+          </Link>
+        </div>
+
+        {/* Real Social OAuth Sign-In Buttons */}
         <div className="space-y-2.5">
           <button
             type="button"
@@ -339,42 +330,8 @@ export default function LoginPage() {
             <div className="w-full border-t border-slate-800" />
           </div>
           <span className="relative bg-slate-900 px-3 text-[11px] text-slate-500 uppercase tracking-wider">
-            or continue with email
+            or sign in with email
           </span>
-        </div>
-
-        {/* Method Toggle: OTP vs Password */}
-        <div
-          className="flex p-1 rounded-xl border text-xs"
-          style={{
-            backgroundColor: 'rgba(0,0,0,0.4)',
-            borderColor: currentTheme.surfaceBorder,
-          }}
-        >
-          <button
-            type="button"
-            onClick={() => {
-              setMode('otp');
-              setErrorMsg(null);
-            }}
-            className={`flex-1 py-1.5 rounded-lg text-center font-semibold transition-all ${
-              mode === 'otp' ? 'bg-white/10 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Email Code (OTP)
-          </button>
-          <button
-            type="button"
-            onClick={() => {
-              setMode('password');
-              setErrorMsg(null);
-            }}
-            className={`flex-1 py-1.5 rounded-lg text-center font-semibold transition-all ${
-              mode === 'password' ? 'bg-white/10 text-white shadow' : 'text-slate-400 hover:text-white'
-            }`}
-          >
-            Password
-          </button>
         </div>
 
         {/* Feedback Alerts */}
@@ -393,14 +350,97 @@ export default function LoginPage() {
         )}
 
         {/* ------------------------------------------------------------- */}
-        {/* EMAIL OTP FLOW */}
+        {/* OPTION 1: STANDARD PASSWORD LOGIN */}
         {/* ------------------------------------------------------------- */}
-        {mode === 'otp' && (
+        {authMethod === 'password' && (
+          <form onSubmit={handlePasswordSubmit} className="space-y-4">
+            <div>
+              <label className="block text-slate-300 font-semibold mb-1">Corporate Work Email</label>
+              <div className="relative">
+                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                <input
+                  type="email"
+                  required
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                  placeholder="name@company.com"
+                  className="w-full rounded-xl border bg-black/40 pl-10 pr-3.5 py-2.5 text-white focus:outline-none focus:ring-1"
+                  style={{ borderColor: currentTheme.surfaceBorder }}
+                />
+              </div>
+            </div>
+
+            <div>
+              <div className="flex items-center justify-between mb-1">
+                <label className="text-slate-300 font-semibold">Password</label>
+                <button
+                  type="button"
+                  onClick={() => {
+                    setAuthMethod('otp');
+                    setOtpStage('email');
+                    setErrorMsg(null);
+                  }}
+                  className="text-cyan-400 hover:underline text-[11px]"
+                >
+                  Sign in with email code instead
+                </button>
+              </div>
+              <div className="relative">
+                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
+                <input
+                  type="password"
+                  required
+                  value={password}
+                  onChange={(e) => setPassword(e.target.value)}
+                  placeholder="••••••••••••"
+                  className="w-full rounded-xl border bg-black/40 pl-10 pr-3.5 py-2.5 text-white focus:outline-none focus:ring-1"
+                  style={{ borderColor: currentTheme.surfaceBorder }}
+                />
+              </div>
+            </div>
+
+            <button
+              type="submit"
+              disabled={isLoading}
+              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-bold text-slate-950 transition-all hover:opacity-90 disabled:opacity-50 shadow-lg mt-2"
+              style={{ backgroundColor: currentTheme.primary }}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="w-4 h-4 animate-spin" />
+                  <span>Signing In...</span>
+                </>
+              ) : (
+                <>
+                  <span>Sign In to Console</span>
+                  <ArrowRight className="h-4 w-4" />
+                </>
+              )}
+            </button>
+          </form>
+        )}
+
+        {/* ------------------------------------------------------------- */}
+        {/* OPTION 2: EMAIL CODE (OTP) LOGIN */}
+        {/* ------------------------------------------------------------- */}
+        {authMethod === 'otp' && (
           <div className="space-y-4">
-            {otpStage === 'email' && (
-              <form onSubmit={handleSendOtp} className="space-y-4">
+            {otpStage === 'email' ? (
+              <form onSubmit={handleSendLoginOtp} className="space-y-4">
                 <div>
-                  <label className="block text-slate-300 font-semibold mb-1.5">Corporate Email Address</label>
+                  <div className="flex items-center justify-between mb-1">
+                    <label className="text-slate-300 font-semibold">Corporate Work Email</label>
+                    <button
+                      type="button"
+                      onClick={() => {
+                        setAuthMethod('password');
+                        setErrorMsg(null);
+                      }}
+                      className="text-cyan-400 hover:underline text-[11px]"
+                    >
+                      Use password instead
+                    </button>
+                  </div>
                   <div className="relative">
                     <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
                     <input
@@ -413,8 +453,8 @@ export default function LoginPage() {
                       style={{ borderColor: currentTheme.surfaceBorder }}
                     />
                   </div>
-                  <p className="text-[10px] text-slate-400 mt-1.5">
-                    We will send a 6-digit cryptographic verification code to your email inbox.
+                  <p className="text-[10px] text-slate-400 mt-1">
+                    We'll email you a single-use 6-digit sign-in code.
                   </p>
                 </div>
 
@@ -425,19 +465,20 @@ export default function LoginPage() {
                   style={{ backgroundColor: currentTheme.primary }}
                 >
                   {isLoading ? (
-                    <span>Sending Verification Code...</span>
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Dispatching Code...</span>
+                    </>
                   ) : (
                     <>
-                      <span>Send 6-Digit Code</span>
-                      <ArrowRight className="w-4 h-4" />
+                      <span>Send 6-Digit Sign-In Code</span>
+                      <ArrowRight className="h-4 w-4" />
                     </>
                   )}
                 </button>
               </form>
-            )}
-
-            {otpStage === 'code' && (
-              <form onSubmit={handleVerifyOtp} className="space-y-4">
+            ) : (
+              <form onSubmit={handleVerifyLoginOtp} className="space-y-4">
                 <div className="flex items-center justify-between text-slate-400">
                   <span>Enter 6-digit code sent to:</span>
                   <button
@@ -456,12 +497,11 @@ export default function LoginPage() {
                   {email}
                 </div>
 
-                {/* 6 Digit Inputs */}
                 <div className="flex justify-between gap-2 my-4">
                   {otpCode.map((digit, idx) => (
                     <input
                       key={idx}
-                      id={`otp-input-${idx}`}
+                      id={`login-otp-${idx}`}
                       type="text"
                       maxLength={6}
                       value={digit}
@@ -480,7 +520,7 @@ export default function LoginPage() {
                   <button
                     type="button"
                     disabled={isCounting || isLoading}
-                    onClick={handleSendOtp}
+                    onClick={handleSendLoginOtp}
                     className="text-cyan-400 hover:underline disabled:text-slate-600 disabled:no-underline text-[11px] font-semibold"
                   >
                     Resend Code
@@ -493,136 +533,25 @@ export default function LoginPage() {
                   className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-bold text-slate-950 transition-all hover:opacity-90 disabled:opacity-50 shadow-lg mt-2"
                   style={{ backgroundColor: currentTheme.primary }}
                 >
-                  {isLoading ? <span>Verifying Code...</span> : <span>Confirm & Sign In</span>}
-                </button>
-              </form>
-            )}
-
-            {otpStage === 'finalize' && (
-              <form onSubmit={handleFinalizeRegistration} className="space-y-4">
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Your Full Name</label>
-                  <div className="relative">
-                    <User className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="text"
-                      required
-                      value={name}
-                      onChange={(e) => setName(e.target.value)}
-                      placeholder="Jane Doe"
-                      className="w-full rounded-xl border bg-black/40 pl-10 pr-3.5 py-2.5 text-white focus:outline-none"
-                      style={{ borderColor: currentTheme.surfaceBorder }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Company / Organization</label>
-                  <div className="relative">
-                    <Building2 className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="text"
-                      required
-                      value={company}
-                      onChange={(e) => setCompany(e.target.value)}
-                      placeholder="Acme Financial"
-                      className="w-full rounded-xl border bg-black/40 pl-10 pr-3.5 py-2.5 text-white focus:outline-none"
-                      style={{ borderColor: currentTheme.surfaceBorder }}
-                    />
-                  </div>
-                </div>
-
-                <div>
-                  <label className="block text-slate-300 font-semibold mb-1">Set Account Password</label>
-                  <div className="relative">
-                    <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                    <input
-                      type="password"
-                      required
-                      value={newPassword}
-                      onChange={(e) => setNewPassword(e.target.value)}
-                      placeholder="••••••••••••"
-                      className="w-full rounded-xl border bg-black/40 pl-10 pr-3.5 py-2.5 text-white focus:outline-none"
-                      style={{ borderColor: currentTheme.surfaceBorder }}
-                    />
-                  </div>
-                </div>
-
-                <button
-                  type="submit"
-                  disabled={isLoading}
-                  className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-bold text-slate-950 transition-all hover:opacity-90 disabled:opacity-50 shadow-lg mt-2"
-                  style={{ backgroundColor: currentTheme.primary }}
-                >
-                  {isLoading ? <span>Completing Setup...</span> : <span>Finish Setup & Enter Console</span>}
+                  {isLoading ? (
+                    <>
+                      <Loader2 className="w-4 h-4 animate-spin" />
+                      <span>Verifying...</span>
+                    </>
+                  ) : (
+                    <span>Confirm & Sign In</span>
+                  )}
                 </button>
               </form>
             )}
           </div>
         )}
 
-        {/* ------------------------------------------------------------- */}
-        {/* DIRECT PASSWORD AUTHENTICATION */}
-        {/* ------------------------------------------------------------- */}
-        {mode === 'password' && (
-          <form onSubmit={handlePasswordSubmit} className="space-y-4">
-            <div>
-              <label className="block text-slate-300 font-semibold mb-1">Email Address</label>
-              <div className="relative">
-                <Mail className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                <input
-                  type="email"
-                  required
-                  value={passwordEmail}
-                  onChange={(e) => setPasswordEmail(e.target.value)}
-                  placeholder="name@company.com"
-                  className="w-full rounded-xl border bg-black/40 pl-10 pr-3.5 py-2.5 text-white focus:outline-none"
-                  style={{ borderColor: currentTheme.surfaceBorder }}
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-slate-300 font-semibold mb-1">Password</label>
-              <div className="relative">
-                <Lock className="w-4 h-4 text-slate-500 absolute left-3.5 top-3" />
-                <input
-                  type="password"
-                  required
-                  value={password}
-                  onChange={(e) => setPassword(e.target.value)}
-                  placeholder="••••••••••••"
-                  className="w-full rounded-xl border bg-black/40 pl-10 pr-3.5 py-2.5 text-white focus:outline-none"
-                  style={{ borderColor: currentTheme.surfaceBorder }}
-                />
-              </div>
-            </div>
-
-            <button
-              type="submit"
-              disabled={isLoading}
-              className="w-full flex items-center justify-center gap-2 rounded-xl py-3 font-bold text-slate-950 transition-all hover:opacity-90 disabled:opacity-50 shadow-lg mt-2"
-              style={{ backgroundColor: currentTheme.primary }}
-            >
-              {isLoading ? (
-                <span>Authenticating...</span>
-              ) : (
-                <>
-                  <span>Sign In</span>
-                  <ArrowRight className="h-4 w-4" />
-                </>
-              )}
-            </button>
-          </form>
-        )}
-
-        {/* Footer Navigation */}
-        <div className="pt-2 flex items-center justify-between text-[11px] text-slate-400 border-t border-slate-800">
-          <Link href="/" className="hover:text-white transition-colors">
-            ← Back to Public Website
-          </Link>
-          <Link href="/#pricing" className="text-cyan-400 hover:underline">
-            View Pricing →
+        {/* Footer Link to Sign Up */}
+        <div className="pt-2 text-center text-[11px] text-slate-400 border-t border-slate-800">
+          Don't have an enterprise account?{' '}
+          <Link href="/signup" className="text-cyan-400 hover:underline font-semibold ml-1">
+            Create Account here →
           </Link>
         </div>
       </div>

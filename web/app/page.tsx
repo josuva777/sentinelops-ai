@@ -190,14 +190,14 @@ export default function HomePage() {
               className="mt-10 flex flex-wrap items-center justify-center gap-4"
             >
               <Link
-                href="/dashboard"
+                href="/signup"
                 className="flex items-center gap-2 rounded-xl px-7 py-3.5 text-sm font-bold text-slate-950 transition-all duration-300 hover:scale-105 shadow-xl"
                 style={{
                   backgroundColor: currentTheme.primary,
                   boxShadow: `0 0 25px -4px ${currentTheme.glow}`,
                 }}
               >
-                <span>Enter Security Console</span>
+                <span>Get Started Free</span>
                 <ArrowRight className="h-4 w-4" />
               </Link>
               <a
